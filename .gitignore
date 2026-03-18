@@ -1,0 +1,26 @@
+cat <<EOT >> .gitignore
+# uv / Virtual Environment
+.venv/
+venv/
+env/
+
+# Sensitive data
+.env
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# OS generated files
+.DS_Store
+
+# Test reports & screenshots
+screenshots/
+allure-results/
+allure-report/
+EOT
+
+# Notes
+*.txt
