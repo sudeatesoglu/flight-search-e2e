@@ -1,15 +1,11 @@
-import logging
+from loguru import logger
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-# Setup logger for the page objects
-logger = logging.getLogger(__name__)
-
 class ElementTimeoutException(Exception):
     """Custom exception raised when an element cannot be found within the specified timeout."""
     pass
-
 
 class BasePage:
     """Base class providing standard Selenium operations and explicit waits for all page objects."""
@@ -33,10 +29,13 @@ class BasePage:
         :param locator: Tuple of (By locator type, locator string)
         :return: WebElement found
         """
+        logger.debug(f"Attempting to find element with locator: {locator}")
         try:
-            return self.wait.until(EC.presence_of_element_located(locator))
+            element = self.wait.until(EC.presence_of_element_located(locator))
+            logger.info(f"Successfully found element: {locator}")
+            return element
         except TimeoutException as e:
-            logger.error(f"Timeout: Could not find element {locator} within {self.timeout} seconds.")
+            logger.error(f"TimeoutException: Could not find element {locator} within {self.timeout} seconds.")
             raise ElementTimeoutException(f"Element {locator} not present.") from e
 
 
@@ -46,11 +45,13 @@ class BasePage:
         
         :param locator: Tuple of (By locator type, locator string)
         """
+        logger.debug(f"Attempting to click element with locator: {locator}")
         try:
             element = self.wait.until(EC.element_to_be_clickable(locator))
             element.click()
+            logger.info(f"Successfully clicked element: {locator}")
         except TimeoutException as e:
-            logger.error(f"Timeout: Element {locator} is not clickable within {self.timeout} seconds.")
+            logger.error(f"TimeoutException: Element {locator} is not clickable within {self.timeout} seconds.")
             raise ElementTimeoutException(f"Element {locator} not clickable.") from e
 
 
@@ -61,12 +62,14 @@ class BasePage:
         :param locator: Tuple of (By locator type, locator string)
         :param text: The text string to input
         """
+        logger.debug(f"Attempting to input text '{text}' into element: {locator}")
         try:
             element = self.wait.until(EC.visibility_of_element_located(locator))
             element.clear()
             element.send_keys(text)
+            logger.info(f"Successfully inputted text into element: {locator}")
         except TimeoutException as e:
-            logger.error(f"Timeout: Could not input text. Element {locator} not visible within {self.timeout}s.")
+            logger.error(f"TimeoutException: Could not input text. Element {locator} not visible within {self.timeout}s.")
             raise ElementTimeoutException(f"Element {locator} not visible for text input.") from e
 
 
@@ -77,9 +80,12 @@ class BasePage:
         :param locator: Tuple of (By locator type, locator string)
         :return: String text of the element
         """
+        logger.debug(f"Attempting to get text from element: {locator}")
         try:
             element = self.wait.until(EC.visibility_of_element_located(locator))
-            return element.text
+            text = element.text
+            logger.info(f"Successfully retrieved text '{text}' from element: {locator}")
+            return text
         except TimeoutException as e:
-            logger.error(f"Timeout: Could not get text. Element {locator} not visible within {self.timeout}s.")
+            logger.error(f"TimeoutException: Could not get text. Element {locator} not visible within {self.timeout}s.")
             raise ElementTimeoutException(f"Element {locator} not visible for getting text.") from e
