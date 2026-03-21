@@ -1,4 +1,3 @@
-import time
 from loguru import logger
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
@@ -28,14 +27,22 @@ class FlightResultPage(BasePage):
             raise ElementTimeoutException("Flight results failed to load.") from e
 
 
-    def wait_for_loader_to_disappear(self) -> None:
-        """Wait for the loader to disappear on the screen."""
-        logger.debug("Checking if loader is present and waiting for it to disappear...")
+    def wait_for_flight_list_update(self) -> None:
+        """
+        Smart wait that handles the React rendering cycle after applying filters.
+        Anticipates the loader, then ensures it is completely gone and elements are visible.
+        """
+        logger.debug("Waiting for flight list update to complete...")
         try:
-            self.wait.until(EC.invisibility_of_element_located(FlightResultPageLocators.LOADER_SPINNER))
-            logger.info("Loader disappeared, DOM is ready.")
+            WebDriverWait(self.driver, 1.5).until(
+                EC.visibility_of_element_located(FlightResultPageLocators.LOADER_SPINNER)
+            )
         except TimeoutException:
-            logger.warning("Loader did not disappear or took too long. Proceeding anyway...")
+            pass
+
+        self.wait.until(EC.invisibility_of_element_located(FlightResultPageLocators.LOADER_SPINNER))
+        self.wait.until(EC.visibility_of_any_elements_located(FlightResultPageLocators.FLIGHT_CARDS))
+        logger.info("Flight list updated and DOM is ready.")
 
 
     def apply_departure_time_filter(self, start_time: str, end_time: str) -> None:
@@ -63,8 +70,6 @@ class FlightResultPage(BasePage):
             panel = self.find_element(FlightResultPageLocators.ACCORDION_PANEL)
             ActionChains(self.driver).move_to_element(panel).click().perform()
         
-        time.sleep(1)
-
         slider_track = self.wait.until(EC.visibility_of_element_located(FlightResultPageLocators.SLIDER_TRACK))
         slider_width = slider_track.size['width']
         max_minutes = 1439.0
@@ -80,9 +85,7 @@ class FlightResultPage(BasePage):
             action = ActionChains(self.driver)
             action.click_and_hold(left_handle).pause(0.5).move_by_offset(x_offset_left, 0).pause(0.5).release().perform()
             
-            time.sleep(1) 
-            self.wait_for_loader_to_disappear()
-            time.sleep(1.5)
+            self.wait_for_flight_list_update()
 
         # Right handle (end time)
         right_handle = self.find_element(FlightResultPageLocators.RIGHT_HANDLE)
@@ -95,9 +98,7 @@ class FlightResultPage(BasePage):
             action = ActionChains(self.driver)
             action.click_and_hold(right_handle).pause(0.5).move_by_offset(-x_offset_right, 0).pause(0.5).release().perform()
             
-            time.sleep(1)
-            self.wait_for_loader_to_disappear()
-            time.sleep(1.5)
+            self.wait_for_flight_list_update()
 
 
     def get_departure_times(self) -> list[str]:
@@ -123,20 +124,17 @@ class FlightResultPage(BasePage):
     def apply_airline_filter(self) -> None:
         """
         Open the Airline filter accordion and select Turkish Airlines.
-        Uses strategic waits to handle React DOM updates.
         """
         logger.info("Opening the Airline filter accordion.")
         self.click_element_with_actions(FlightResultPageLocators.AIRLINE_ACCORDION)
         
-        import time
-        time.sleep(1)
+        logger.info("Waiting for THY checkbox to become visible...")
+        self.wait.until(EC.visibility_of_element_located(FlightResultPageLocators.THY_CHECKBOX))
 
         logger.info("Applying Turkish Airlines (THY) filter.")
         self.click_element_with_actions(FlightResultPageLocators.THY_CHECKBOX)
         
-        time.sleep(1)
-        self.wait_for_loader_to_disappear()
-        time.sleep(1.5)
+        self.wait_for_flight_list_update()
 
 
     def get_displayed_airlines(self) -> list[str]:
