@@ -36,3 +36,7 @@ class FlightResultPageLocators:
     RIGHT_HANDLE = (By.XPATH, "(//div[contains(@class, 'rc-slider-handle-2')])[1]")
     DEPARTURE_TIMES = (By.CSS_SELECTOR, "[data-testid='departureTime']")
     LOADER_SPINNER = (By.CSS_SELECTOR, ".weg-loader")
+    AIRLINE_ACCORDION = (By.CSS_SELECTOR, "div.ctx-filter-airline")
+    THY_CHECKBOX = (By.CSS_SELECTOR, "input#TKairlines") 
+    FLIGHT_CARD_AIRLINE_NAME = (By.CSS_SELECTOR, ".summary-marketing-airlines")
+    FLIGHT_CARD_PRICE = (By.CSS_SELECTOR, "[data-testid='flightInfoPrice']")

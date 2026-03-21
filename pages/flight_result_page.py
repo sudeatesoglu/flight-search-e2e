@@ -54,7 +54,6 @@ class FlightResultPage(BasePage):
         target_end_mins = time_to_mins(end_time)
 
         logger.info(f"Applying Departure Time filter: {start_time} - {end_time} ({target_start_mins} - {target_end_mins} mins).")
-        
         logger.info("Opening the accordion panel.")
         
         try:
@@ -119,3 +118,57 @@ class FlightResultPage(BasePage):
         except TimeoutException as e:
             logger.error("Could not find any departure times on the page.")
             raise ElementTimeoutException("Departure time elements not found.") from e
+        
+
+    def apply_airline_filter(self) -> None:
+        """
+        Open the Airline filter accordion and select Turkish Airlines.
+        Uses strategic waits to handle React DOM updates.
+        """
+        logger.info("Opening the Airline filter accordion.")
+        self.click_element_with_actions(FlightResultPageLocators.AIRLINE_ACCORDION)
+        
+        import time
+        time.sleep(1)
+
+        logger.info("Applying Turkish Airlines (THY) filter.")
+        self.click_element_with_actions(FlightResultPageLocators.THY_CHECKBOX)
+        
+        time.sleep(1)
+        self.wait_for_loader_to_disappear()
+        time.sleep(1.5)
+
+
+    def get_displayed_airlines(self) -> list[str]:
+        """Extract and return the names of all airlines currently visible on the page."""
+        logger.info("Retrieving displayed airline names...")
+        try:
+            elements = self.wait.until(EC.presence_of_all_elements_located(FlightResultPageLocators.FLIGHT_CARD_AIRLINE_NAME))
+            airlines = [el.text.strip() for el in elements if el.is_displayed() and el.text.strip()]
+            logger.info(f"Retrieved {len(airlines)} visible airline entries.")
+            return airlines
+        except TimeoutException:
+            logger.warning("No airline names found. Returning empty list.")
+            return []
+        
+
+    def get_displayed_prices(self) -> list[float]:
+        """Extract exact prices using the 'data-price' HTML attribute from visible flight cards."""
+        logger.info("Retrieving displayed flight prices using data-price attribute...")
+        try:
+            elements = self.wait.until(EC.presence_of_all_elements_located(FlightResultPageLocators.FLIGHT_CARD_PRICE))
+            
+            cleaned_prices = []
+            for element in elements:
+                if element.is_displayed():
+                    price_str = element.get_attribute("data-price")
+                    if price_str:
+                        cleaned_prices.append(float(price_str))
+            
+            logger.info(f"Retrieved {len(cleaned_prices)} valid prices.")
+            return cleaned_prices
+            
+        except TimeoutException:
+            logger.warning("No price elements found. Returning empty list.")
+            return []
+        
