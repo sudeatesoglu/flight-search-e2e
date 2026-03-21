@@ -8,10 +8,10 @@ class FlightResultPage(BasePage):
     """Page Object for the Enuygun Flight Search Results Page."""
 
     # Locators
-    FILTER_TIME_10_TO_18 = (By.XPATH, "//label[contains(text(), '10:00 - 18:00')]")
-    FLIGHT_CARDS = (By.XPATH, "//div[contains(@class, 'flight-card')]")
-    DEPARTURE_TIMES = (By.CSS_SELECTOR, ".departure-time")
-    LOADER_SPINNER = (By.CSS_SELECTOR, ".loading-spinner")
+    FILTER_TIME_10_TO_18 = (By.XPATH, "//div[@class='filter-slider-content' and text()='10:00 ile 18:00 arası']")
+    FLIGHT_CARDS = (By.CSS_SELECTOR, ".flight-item__wrapper")
+    DEPARTURE_TIMES = (By.CSS_SELECTOR, ".departureTime")
+    LOADER_SPINNER = (By.CSS_SELECTOR, ".weg-loader")
 
     def wait_for_results_to_load(self):
         """Wait for the flight results to appear on the screen."""
