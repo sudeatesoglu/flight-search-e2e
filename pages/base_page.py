@@ -2,6 +2,7 @@ from loguru import logger
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.action_chains import ActionChains
 
 class ElementTimeoutException(Exception):
     """Custom exception raised when an element cannot be found within the specified timeout."""
@@ -53,6 +54,21 @@ class BasePage:
         except TimeoutException as e:
             logger.error(f"TimeoutException: Element {locator} is not clickable within {self.timeout} seconds.")
             raise ElementTimeoutException(f"Element {locator} not clickable.") from e
+
+
+    def click_element_with_actions(self, locator):
+        """
+        Simulate physical mouse click at the exact center coordinates of the element.
+
+        :param locator: Tuple of (By locator type, locator string)"""
+        logger.debug(f"Attempting to click with ActionChains: {locator}")
+        try:
+            element = self.wait.until(EC.presence_of_element_located(locator))
+            ActionChains(self.driver).move_to_element(element).click().perform()
+            logger.info(f"Successfully clicked element with ActionChains: {locator}")
+        except TimeoutException as e:
+            logger.error(f"TimeoutException: Element {locator} not present for Action click.")
+            raise ElementTimeoutException(f"Element {locator} not present.") from e
 
 
     def input_text(self, locator, text):

@@ -8,11 +8,11 @@ class HomePage(BasePage):
     # Locators
     ORIGIN_INPUT = (By.CSS_SELECTOR, "[data-testid='endesign-flight-origin-autosuggestion-input']")
     DESTINATION_INPUT = (By.CSS_SELECTOR, "[data-testid='endesign-flight-destination-autosuggestion-input']")
-    DEPARTURE_DATE = (By.CSS_SELECTOR, "[data-testid='enuygun-homepage-flight-departureDate-datepicker-input']")
-    RETURN_DATE = (By.CSS_SELECTOR, "[data-testid='enuygun-homepage-flight-returnDate-datepicker-input']")
+    DEPARTURE_DATE = (By.CSS_SELECTOR, "[data-testid='enuygun-homepage-flight-departureDate-label']")
+    RETURN_DATE = (By.CSS_SELECTOR, "[data-testid='enuygun-homepage-flight-returnDate-label']")
     SEARCH_BUTTON = (By.CSS_SELECTOR, "[data-testid='enuygun-homepage-flight-submitButton']")
-    ORIGIN_FIRST_OPTION = (By.CSS_SELECTOR, "[data-testid='endesign-flight-origin-autosuggestion-option-item-0")
-    DESTINATION_FIRST_OPTION = (By.CSS_SELECTOR, "[data-testid='endesign-flight-destination-autosuggestion-option-item-0")
+    ORIGIN_FIRST_OPTION = (By.CSS_SELECTOR, "[data-testid='endesign-flight-origin-autosuggestion-option-item-0]")
+    DESTINATION_FIRST_OPTION = (By.CSS_SELECTOR, "[data-testid='endesign-flight-destination-autosuggestion-option-item-0]")
 
     def go_to(self, url: str):
         """Navigate to the specified URL."""
