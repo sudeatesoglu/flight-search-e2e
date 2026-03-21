@@ -11,8 +11,9 @@ class HomePage(BasePage):
     DEPARTURE_DATE = (By.CSS_SELECTOR, "[data-testid='enuygun-homepage-flight-departureDate-label']")
     RETURN_DATE = (By.CSS_SELECTOR, "[data-testid='enuygun-homepage-flight-returnDate-label']")
     SEARCH_BUTTON = (By.CSS_SELECTOR, "[data-testid='enuygun-homepage-flight-submitButton']")
-    ORIGIN_FIRST_OPTION = (By.CSS_SELECTOR, "[data-testid='endesign-flight-origin-autosuggestion-option-item-0]")
-    DESTINATION_FIRST_OPTION = (By.CSS_SELECTOR, "[data-testid='endesign-flight-destination-autosuggestion-option-item-0]")
+    ORIGIN_FIRST_OPTION = (By.CSS_SELECTOR, "[data-testid='endesign-flight-origin-autosuggestion-option-item-0']")
+    DESTINATION_FIRST_OPTION = (By.CSS_SELECTOR, "[data-testid='endesign-flight-destination-autosuggestion-option-item-0']")
+    HOTEL_CHECKBOX_CHECKED = (By.CSS_SELECTOR, "[data-testid='flight-oneWayCheckbox-checked-label']")
 
     def go_to(self, url: str):
         """Navigate to the specified URL."""
@@ -53,6 +54,23 @@ class HomePage(BasePage):
         date_locator = (By.XPATH, f"(//button[@title='{date_string}'])[last()]")
         self.click_element(date_locator)
 
+    def uncheck_hotel_offer(self):
+        """
+        Ensures the 'List hotels for these dates' checkbox is unchecked.
+        Prevents the search from opening in a new tab for otel listing.        
+        """
+        logger.info("Checking if the 'Hotel offer' checkbox is selected.")
+        try:
+            checked_elements = self.driver.find_elements(*self.HOTEL_CHECKBOX_CHECKED)
+            
+            if len(checked_elements) > 0:
+                logger.info("Hotel offer is currently CHECKED. Unchecking it to avoid new tabs.")
+                self.click_element(self.HOTEL_CHECKBOX_CHECKED)
+            else:
+                logger.info("Hotel offer is already UNCHECKED. Good to go.")
+        except Exception as e:
+            logger.warning(f"Error while checking the Hotel Checkbox: {e}")
+
     def click_search(self):
         """Click the main search button to find flights."""
         logger.info("Clicking the flight search button.")
@@ -64,4 +82,5 @@ class HomePage(BasePage):
         self.enter_destination(destination)
         self.select_departure_date(dep_date)
         self.select_return_date(ret_date)
+        self.uncheck_hotel_offer()
         self.click_search()
