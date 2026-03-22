@@ -1,5 +1,5 @@
 from loguru import logger
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
@@ -122,3 +122,27 @@ class BasePage:
         except TimeoutException as e:
             logger.error(f"TimeoutException: Could not get text. Element {locator} not visible within {self.timeout}s.")
             raise ElementTimeoutException(f"Element {locator} not visible for getting text.") from e
+        
+
+    def select_dropdown(self, locator, value: str):
+        """
+        Wait until a <select> element is visible and select an option.
+
+        :param locator: Tuple of (By locator type, locator string)
+        :param value: The value or text to select
+        """
+        logger.debug(f"Attempting to select '{value}' from dropdown: {locator}")
+        try:
+            element = self.wait.until(EC.visibility_of_element_located(locator))
+            select = Select(element)
+            
+            try:
+                select.select_by_value(value)
+            except:
+                select.select_by_visible_text(value)
+                
+            logger.info(f"Successfully selected '{value}' from {locator}")
+        except Exception as e:
+            logger.error(f"Failed to select '{value}' from dropdown {locator}. Exception: {e}")
+            raise ElementTimeoutException(f"Could not select {value} from {locator}") from e
+        
