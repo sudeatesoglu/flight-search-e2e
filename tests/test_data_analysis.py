@@ -11,25 +11,120 @@ from pages.home_page import HomePage
 from pages.flight_result_page import FlightResultPage
 from core.config import Config
 
-# Constants
 DATA_DIR = "data"
-CSV_FILE_PATH = f"{DATA_DIR}/nicosia_flights.csv"
-TOP_FLIGHTS_CSV = f"{DATA_DIR}/top_cost_effective_flights.csv"
-PRICES_CHART_PATH = f"{DATA_DIR}/airline_prices.png"
-HEATMAP_CHART_PATH = f"{DATA_DIR}/price_heatmap.png"
+
+class FlightDataAnalyzer:
+    """Helper class to handle data manipulation, scoring, and beautiful visualizations."""
+    
+    def __init__(self, csv_path: str, report_prefix: str):
+        self.df = pd.read_csv(csv_path)
+        self.report_prefix = report_prefix
+        
+        sns.set_theme(style="whitegrid", palette="muted")
+        
+        if not os.path.exists(DATA_DIR):
+            os.makedirs(DATA_DIR)
+
+    def generate_price_summary_chart(self) -> str:
+        """Generates and saves a bar chart of min, max, and avg prices."""
+        logger.info("Generating Minimum, Average, and Maximum Prices chart...")
+        agg_df = self.df.groupby('Airline')['Price'].agg(['min', 'max', 'mean']).reset_index()
+
+        plt.figure(figsize=(10, 6))
+        x = np.arange(len(agg_df))
+        width = 0.25 
+
+        plt.bar(x - width, agg_df['min'], width, label='Min Price', color='#4C72B0')
+        plt.bar(x, agg_df['mean'], width, label='Avg Price', color='#55A868')
+        plt.bar(x + width, agg_df['max'], width, label='Max Price', color='#C44E52')
+
+        plt.xlabel('Airline', fontsize=12, fontweight='bold')
+        plt.ylabel('Price (TRY)', fontsize=12, fontweight='bold')
+        plt.title(f'Price Distribution by Airline\n({self.report_prefix})', fontsize=14, fontweight='bold')
+        plt.xticks(x, agg_df['Airline'], rotation=15)
+        plt.legend()
+        plt.tight_layout()
+
+        output_path = f"{DATA_DIR}/{self.report_prefix}_airline_prices.png"
+        plt.savefig(output_path, dpi=300)
+        plt.close()
+        return output_path
+
+    def generate_time_slot_heatmap(self) -> str:
+        """Generates and saves a heatmap of prices by time slot."""
+        logger.info("Generating Heat Map for price distribution by time slot...")
+        
+        self.df['Hour'] = pd.to_datetime(self.df['Departure Time'], format='%H:%M').dt.hour
+        bins = [-1, 5, 11, 17, 23]
+        labels = ['Night (00-05)', 'Morning (06-11)', 'Afternoon (12-17)', 'Evening (18-23)']
+        self.df['Time Slot'] = pd.cut(self.df['Hour'], bins=bins, labels=labels, right=True)
+
+        heatmap_data = self.df.pivot_table(values='Price', index='Airline', columns='Time Slot', aggfunc='mean', observed=False)
+
+        plt.figure(figsize=(10, 6))
+        sns.heatmap(heatmap_data, annot=True, fmt=".0f", cmap="YlGnBu", cbar_kws={'label': 'Average Price (TRY)'})
+        plt.title(f'Average Flight Price by Airline and Time Slot\n({self.report_prefix})', fontsize=14, fontweight='bold')
+        plt.tight_layout()
+
+        output_path = f"{DATA_DIR}/{self.report_prefix}_price_heatmap.png"
+        plt.savefig(output_path, dpi=300)
+        plt.close()
+        return output_path
+
+    @staticmethod
+    def parse_duration(d_str: str) -> int:
+        """Helper to convert duration strings like '1sa 30dk' to total minutes."""
+        parts = str(d_str).split(' ')
+        h, m = 0, 0
+        for part in parts:
+            if 'sa' in part:
+                h = int(part.replace('sa', ''))
+            elif 'dk' in part:
+                m = int(part.replace('dk', ''))
+        return h * 60 + m
+
+    def calculate_cost_effectiveness(self) -> str:
+        """Calculates normalized score (70% Price, 30% Duration) and saves top 5."""
+        logger.info("Calculating cost-effectiveness scores...")
+        self.df['Duration_min'] = self.df['Duration'].apply(self.parse_duration)
+
+        # Min-Max Normalization
+        price_range = self.df['Price'].max() - self.df['Price'].min()
+        dur_range = self.df['Duration_min'].max() - self.df['Duration_min'].min()
+        
+        self.df['Norm_Price'] = (self.df['Price'] - self.df['Price'].min()) / price_range if price_range > 0 else 0
+        self.df['Norm_Duration'] = (self.df['Duration_min'] - self.df['Duration_min'].min()) / dur_range if dur_range > 0 else 0
+
+        self.df['Score'] = (self.df['Norm_Price'] * 0.7) + (self.df['Norm_Duration'] * 0.3)
+        best_flights = self.df.sort_values('Score').head(5)
+
+        output_path = f"{DATA_DIR}/{self.report_prefix}_top_cost_effective.csv"
+        best_flights[['Departure Time', 'Arrival Time', 'Airline', 'Price', 'Transit', 'Duration', 'Score']].to_csv(output_path, index=False)
+        
+        logger.info(f"--- Top 5 Most Cost-Effective Flights ({self.report_prefix}) ---")
+        for _, row in best_flights.iterrows():
+            logger.info(f"Airline: {row['Airline']} | Dep: {row['Departure Time']} | Price: {row['Price']} TRY | Dur: {row['Duration']} | Score: {row['Score']:.3f}")
+            
+        return output_path
+
 
 @pytest.mark.parametrize(
     "origin, destination, dep_date, ret_date",
     [
-        ("Istanbul", "Lefkosa", "2026-04-15", "2026-04-20")
+        ("Istanbul", "Lefkosa", "2026-04-15", "2026-04-20"),
     ]
 )
-def test_case_4_web_scraping_and_csv_export(driver, origin, destination, dep_date, ret_date):
+def test_case_4_analysis_and_categorization(driver, origin, destination, dep_date, ret_date):
     """
-    Performs a search and scrapes all flight data into a CSV file.
+    End-to-end test that satisfies Case 4: Search, Scrape, Analyze, and Categorize.
+    Dynamically generates files based on the route to allow comparison.
     """
-    logger.info(f"--- Starting Case 4: Web Scraping ({origin} to {destination}) ---")
+    report_prefix = f"{origin}_{destination}_{dep_date}".lower().replace(" ", "_")
+    csv_file_path = f"{DATA_DIR}/{report_prefix}_raw_flights.csv"
     
+    logger.info(f"--- Starting Case 4: Analysis and Categorization for {origin} to {destination} ---")
+    
+    # Scraping the flight data from the results page and saving to CSV
     home_page = HomePage(driver)
     results_page = FlightResultPage(driver)
     
@@ -44,99 +139,24 @@ def test_case_4_web_scraping_and_csv_export(driver, origin, destination, dep_dat
         os.makedirs(DATA_DIR)
         
     keys = flight_data[0].keys()
-    with open(CSV_FILE_PATH, 'w', newline='', encoding='utf-8') as output_file:
+    with open(csv_file_path, 'w', newline='', encoding='utf-8') as output_file:
         dict_writer = csv.DictWriter(output_file, fieldnames=keys)
         dict_writer.writeheader()
         dict_writer.writerows(flight_data)
         
-    logger.info(f"Successfully saved {len(flight_data)} flight records to {CSV_FILE_PATH}")
-    assert os.path.exists(CSV_FILE_PATH), "CSV file was not created successfully."
-    logger.info("--- Case 4 (Scraping) Completed Successfully ---")
+    logger.info(f"Data extraction complete. Raw data saved to {csv_file_path}")
 
-
-def test_case_5_flight_data_analysis():
-    """
-    Reads the scraped CSV data, performs data analysis, 
-    and generates visual reports and cost-effectiveness scores.
-    """
-    logger.info("--- Starting Case 5: Data Analysis and Visualization ---")
+    # Analyzing Phase
+    analyzer = FlightDataAnalyzer(csv_file_path, report_prefix)
     
-    if not os.path.exists(CSV_FILE_PATH):
-        pytest.skip(f"Skipping analysis: '{CSV_FILE_PATH}' not found. Ensure Case 4 runs first.")
-
-    df = pd.read_csv(CSV_FILE_PATH)
-    assert not df.empty, "The CSV file is empty, cannot perform analysis."
-
-    logger.info("Generating Minimum, Average, and Maximum Prices chart...")
-    agg_df = df.groupby('Airline')['Price'].agg(['min', 'max', 'mean']).reset_index()
-
-    plt.figure(figsize=(10, 6))
-    x = np.arange(len(agg_df))
-    width = 0.25 
-
-    plt.bar(x - width, agg_df['min'], width, label='Min Price', color='#7eb0d5')
-    plt.bar(x, agg_df['mean'], width, label='Avg Price', color='#b2e061')
-    plt.bar(x + width, agg_df['max'], width, label='Max Price', color='#bd7ebe')
-
-    plt.xlabel('Airline', fontsize=12)
-    plt.ylabel('Price (TRY)', fontsize=12)
-    plt.title('Minimum, Average, and Maximum Prices by Airline', fontsize=14)
-    plt.xticks(x, agg_df['Airline'])
-    plt.legend()
-    plt.tight_layout()
-
-    plt.savefig(PRICES_CHART_PATH)
-    logger.info(f"Saved prices chart to {PRICES_CHART_PATH}")
-    plt.close()
-
-    logger.info("Generating Heat Map for price distribution by time slot...")
-    df['Hour'] = pd.to_datetime(df['Departure Time'], format='%H:%M').dt.hour
-    bins = [-1, 5, 11, 17, 23]
-    labels = ['Night (00-05)', 'Morning (06-11)', 'Afternoon (12-17)', 'Evening (18-23)']
-    df['Time Slot'] = pd.cut(df['Hour'], bins=bins, labels=labels, right=True)
-
-    heatmap_data = df.pivot_table(values='Price', index='Airline', columns='Time Slot', aggfunc='mean', observed=False)
-
-    plt.figure(figsize=(9, 6))
-    sns.heatmap(heatmap_data, annot=True, fmt=".0f", cmap="YlOrRd", cbar_kws={'label': 'Average Price (TRY)'})
-    plt.title('Average Flight Price by Airline and Time Slot', fontsize=14)
-    plt.tight_layout()
-
-    plt.savefig(HEATMAP_CHART_PATH)
-    logger.info(f"Saved heatmap chart to {HEATMAP_CHART_PATH}")
-    plt.close()
-
-    logger.info("Calculating cost-effectiveness scores...")
+    price_chart_path = analyzer.generate_price_summary_chart()
+    heatmap_path = analyzer.generate_time_slot_heatmap()
+    top_flights_path = analyzer.calculate_cost_effectiveness()
     
-    def parse_duration(d_str):
-        parts = str(d_str).split(' ')
-        h, m = 0, 0
-        for part in parts:
-            if 'sa' in part:
-                h = int(part.replace('sa', ''))
-            elif 'dk' in part:
-                m = int(part.replace('dk', ''))
-        return h * 60 + m
-
-    df['Duration_min'] = df['Duration'].apply(parse_duration)
-
-    price_range = df['Price'].max() - df['Price'].min()
-    dur_range = df['Duration_min'].max() - df['Duration_min'].min()
+    # Assertions
+    assert os.path.exists(price_chart_path), "Price summary chart was not created."
+    assert os.path.exists(heatmap_path), "Time slot heatmap was not created."
+    assert os.path.exists(top_flights_path), "Top cost-effective flights CSV was not created."
     
-    df['Norm_Price'] = (df['Price'] - df['Price'].min()) / price_range if price_range > 0 else 0
-    df['Norm_Duration'] = (df['Duration_min'] - df['Duration_min'].min()) / dur_range if dur_range > 0 else 0
-
-    df['Score'] = (df['Norm_Price'] * 0.7) + (df['Norm_Duration'] * 0.3)
-    best_flights = df.sort_values('Score').head(5)
-
-    best_flights[['Departure Time', 'Arrival Time', 'Airline', 'Price', 'Transit', 'Duration', 'Score']].to_csv(TOP_FLIGHTS_CSV, index=False)
-    
-    logger.info(f"Saved top cost-effective flights to {TOP_FLIGHTS_CSV}")
-    logger.info("--- Top 5 Most Cost-Effective Flights ---")
-    
-    for index, row in best_flights.iterrows():
-        logger.info(f"Airline: {row['Airline']} | Dep: {row['Departure Time']} | Price: {row['Price']} TRY | Dur: {row['Duration']} | Score: {row['Score']:.3f}")
-
-    assert os.path.exists(PRICES_CHART_PATH) and os.path.exists(HEATMAP_CHART_PATH), "Charts were not generated successfully."
-    logger.info("--- Case 5 (Analysis) Completed Successfully ---")
+    logger.info("--- Case 4 Completed Successfully ---")
     
