@@ -75,3 +75,23 @@ class PassengerInfoPageLocators:
     CONTINUE_BTN = (By.CSS_SELECTOR, "#continue-button")
 
     PAYMENT_PAGE_INDICATOR = (By.CSS_SELECTOR, "[data-testid='cardNumber']")
+
+
+class PaymentPageLocators:
+    """Locators for the Enuygun Payment Page."""
+    
+    CARD_NUMBER = (By.CSS_SELECTOR, "[data-testid='cardNumber']")
+    CARD_MONTH_INPUT = (By.CSS_SELECTOR, "[data-testid='cardMonth-input']")
+    CARD_YEAR_INPUT = (By.CSS_SELECTOR, "[data-testid='cardYear-input']")
+    CVV = (By.CSS_SELECTOR, "[data-testid='CVV']")
+    
+    @staticmethod
+    def get_month_option(index: str) -> tuple[str, str]:
+        return (By.CSS_SELECTOR, f"[data-testid='cardMonth-option-{index}']")
+
+    @staticmethod
+    def get_year_option(index: str) -> tuple[str, str]:
+        return (By.CSS_SELECTOR, f"[data-testid='cardYear-option-{index}']")
+
+    SUBMIT_BUTTON = (By.CSS_SELECTOR, "[data-testid='payment-form-submit-button']")
+    MEMBERSHIP_DIALOG_CLOSE = (By.CSS_SELECTOR, "[data-testid='membership-signin-dialog-close-button']")

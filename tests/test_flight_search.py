@@ -5,6 +5,7 @@ from loguru import logger
 from pages.home_page import HomePage
 from pages.flight_result_page import FlightResultPage
 from pages.passenger_info_page import PassengerInfoPage
+from pages.payment_page import PaymentPage
 from core.config import Config
 
 from selenium.webdriver.common.by import By
@@ -87,20 +88,22 @@ def test_case_2_turkish_airlines_price_sorting(
 
 
 @pytest.mark.parametrize(
-    "origin, destination, dep_date, ret_date, email, phone, fname, lname, b_day, b_month, b_year, id_number, gender",
+    "origin, destination, dep_date, ret_date, email, phone, fname, lname, b_day, b_month, b_year, id_number, gender, cc_no, cc_month_idx, cc_year_idx, cc_cvv",
     [
         (TEST_ORIGIN, TEST_DESTINATION, TEST_DEP_DATE, TEST_RET_DATE, 
-         "sude.test@gmail.com", "5551234567", "Sude", "Atesoglu", "04", "04", "2000", "58880076462", "Female")
+         "sude.test@gmail.com", "5551234567", "Sude", "Atesoglu", "04", "04", "2000", "58880076462", "Female",
+         "4242424242424242", "0", "1", "123")
     ]
 )
 def test_case_3_critical_path(
-    driver, origin, destination, dep_date, ret_date, email, phone, fname, lname, b_day, b_month, b_year, id_number, gender
+    driver, origin, destination, dep_date, ret_date, email, phone, fname, lname, b_day, b_month, b_year, id_number, gender, cc_no, cc_month_idx, cc_year_idx, cc_cvv
 ):
     logger.info("--- Starting Case 3: Critical Path (End-to-End Checkout Flow) ---")
     
     home_page = HomePage(driver)
     results_page = FlightResultPage(driver)
     passenger_page = PassengerInfoPage(driver)
+    payment_page = PaymentPage(driver)
     
     home_page.go_to(Config.BASE_URL)
     home_page.enter_origin(origin)
@@ -133,6 +136,12 @@ def test_case_3_critical_path(
     )
     assert payment_indicator_present, "Failed to reach the payment screen! Card input not found."
     logger.info("Assertion Passed: Successfully reached the secure payment page.")
+
+    payment_page.handle_membership_popup()
+    payment_page.fill_credit_card(cc_no, cc_month_idx, cc_year_idx, cc_cvv)
+    payment_page.submit_payment()
+
+    logger.info("Assertion Passed: Critical path completed up to payment submission.")
 
     _save_success_screenshot(driver, "Case3_CriticalPath", "E2E", "Done")
     logger.info("--- Case 3 Completed Successfully ---")

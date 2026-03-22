@@ -13,6 +13,7 @@ class PassengerInfoPage(BasePage):
         self.input_text(PassengerInfoPageLocators.CONTACT_EMAIL, email)
         self.input_text(PassengerInfoPageLocators.CONTACT_PHONE, phone)
 
+
     def fill_passenger_details(self, first_name: str, last_name: str, day: str, month: str, year: str, id_number: str, gender: str = "Female") -> None:
         """Fill out the specific passenger details."""
         logger.info(f"Filling passenger info -> Name: {first_name} {last_name}, TC: {id_number}")
@@ -33,8 +34,9 @@ class PassengerInfoPage(BasePage):
             logger.info("Selecting gender: Male")
             self.click_element_with_js(PassengerInfoPageLocators.GENDER_MALE)
 
+
     def proceed_to_payment(self) -> None:
-        """Click the continue button and intelligently wait for the payment page to load."""
+        """Click the continue button and wait for the payment page to load."""
         logger.info("Clicking 'Continue to Payment' button.")
         self.click_element_with_js(PassengerInfoPageLocators.CONTINUE_BTN)
         

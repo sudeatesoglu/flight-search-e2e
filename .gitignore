@@ -24,3 +24,6 @@ EOT
 
 # Notes
 *.txt
+
+# Logs
+*.log
