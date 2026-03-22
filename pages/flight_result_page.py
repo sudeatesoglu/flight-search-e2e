@@ -219,3 +219,52 @@ class FlightResultPage(BasePage):
             self.wait_for_flight_list_update()
         else:
             logger.info("Final flight selected. Expecting redirection to the checkout page.")
+
+
+    def extract_all_flight_data(self) -> list[dict]:
+        """
+        Scrapes data from all visible flight cards on the page.
+        Returns a list of dictionaries containing flight information.
+        """
+        logger.info("Starting web scraping process for all loaded flight cards...")
+        self.wait_for_flight_list_update()
+        
+        flight_data_list = []
+        
+        try:
+            cards = self.wait.until(EC.presence_of_all_elements_located(FlightResultPageLocators.FLIGHT_CARDS))
+            logger.info(f"Found {len(cards)} flight cards to scrape.")
+            
+            for index, card in enumerate(cards):
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", card)
+                
+                try:
+                    airline = card.find_element(*FlightResultPageLocators.FLIGHT_CARD_AIRLINE_NAME).text.strip()
+                    price_str = card.find_element(*FlightResultPageLocators.FLIGHT_CARD_PRICE).get_attribute("data-price")
+                    dep_time = card.find_element(*FlightResultPageLocators.CARD_DEPARTURE_TIME).text.strip()
+                    arr_time = card.find_element(*FlightResultPageLocators.CARD_ARRIVAL_TIME).text.strip()
+                    duration = card.find_element(*FlightResultPageLocators.CARD_DURATION).text.strip()
+                    
+                    try:
+                        transit = card.find_element(*FlightResultPageLocators.CARD_TRANSIT_INFO).text.strip()
+                    except:
+                        transit = "Direct/Unknown"
+                    
+                    flight_data_list.append({
+                        "Airline": airline,
+                        "Departure Time": dep_time,
+                        "Arrival Time": arr_time,
+                        "Duration": duration,
+                        "Transit": transit,
+                        "Price": float(price_str) if price_str else 0.0
+                    })
+                except Exception as e:
+                    logger.warning(f"Could not extract full data for card index {index}. Skipping. Error: {e}")
+                    
+            logger.info(f"Successfully scraped {len(flight_data_list)} flights.")
+            return flight_data_list
+            
+        except Exception as e:
+            logger.error(f"Failed to scrape flight data: {e}")
+            return []
+        
