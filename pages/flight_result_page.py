@@ -171,39 +171,51 @@ class FlightResultPage(BasePage):
             return []
         
 
-    def select_first_flight(self) -> None:
-        """
-        Clicks the 'Select' button of the very first flight card in the results.
-        Intelligently handles package selections and "Seç ve İlerle" buttons for round-trips.
-        """
-        logger.info("Initiating selection of the first available flight.")
+    def select_first_flight(self, is_return: bool = False, is_final_flight: bool = False) -> None:
+        """Click the select button of the first visible flight card and handle package selections and round-trips."""
+        logger.info(f"Initiating selection of the first available {'RETURN' if is_return else 'DEPARTURE'} flight.")
+        
+        btn_locator = FlightResultPageLocators.RETURN_SELECT_BTNS if is_return else FlightResultPageLocators.SELECT_FIRST_FLIGHT_BTN
         
         try:
-            self.click_element_with_js(FlightResultPageLocators.SELECT_FIRST_FLIGHT_BTN)
-            logger.info("Clicked 'Seç' button on the first flight card.")
-        except ElementTimeoutException as e:
-            logger.error("Failed to find or click the first flight select button.")
-            raise e
+            buttons = self.wait.until(EC.presence_of_all_elements_located(btn_locator))
+            clicked = False
+            
+            for btn in buttons:
+                if btn.is_displayed():
+                    self.driver.execute_script("arguments[0].click();", btn)
+                    clicked = True
+                    logger.info("Clicked 'Seç' button on the targeted visible flight card.")
+                    break
+            
+            if not clicked:
+                raise ElementTimeoutException("No visible 'Seç' button found in the target column.")
+        except Exception as e:
+            logger.error("Failed to find or click the flight select button.")
+            raise ElementTimeoutException("Error clicking flight.") from e
 
         logger.info("Checking if flight package options are displayed...")
         try:
-            WebDriverWait(self.driver, 5).until(
-                EC.element_to_be_clickable(FlightResultPageLocators.FIRST_PACKAGE_SELECTION)
+
+            visible_packages = WebDriverWait(self.driver, 5).until(
+                EC.visibility_of_any_elements_located(FlightResultPageLocators.PACKAGE_ITEMS)
             )
-            logger.info("Package options appeared. Selecting the first (basic) package.")
-            self.click_element_with_js(FlightResultPageLocators.FIRST_PACKAGE_SELECTION)
-            
+            logger.info("Package options appeared. Selecting the first visible package.")
+            self.driver.execute_script("arguments[0].click();", visible_packages[0])
+
             try:
                 WebDriverWait(self.driver, 3).until(
                     EC.presence_of_element_located(FlightResultPageLocators.PROVIDER_SELECT_BTN)
                 )
-                logger.info("'Seç ve İlerle' button detected. Clicking it to confirm departure selection.")
+                logger.info("'Seç ve İlerle' button detected. Clicking it to confirm selection.")
                 self.click_element_with_js(FlightResultPageLocators.PROVIDER_SELECT_BTN)
             except TimeoutException:
-                pass
+                pass 
 
         except TimeoutException:
             logger.info("No package selection appeared. Proceeding to next step.")
             
-        self.wait_for_flight_list_update()
-        
+        if not is_final_flight:
+            self.wait_for_flight_list_update()
+        else:
+            logger.info("Final flight selected. Expecting redirection to the checkout page.")

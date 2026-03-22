@@ -4,6 +4,7 @@ from loguru import logger
 
 from pages.home_page import HomePage
 from pages.flight_result_page import FlightResultPage
+from pages.passenger_info_page import PassengerInfoPage
 from core.config import Config
 
 # Constants
@@ -80,6 +81,56 @@ def test_case_2_turkish_airlines_price_sorting(
     _save_success_screenshot(driver, "Case2_THY", start_time, end_time)
     logger.info("Case 2 completed successfully")
 
+
+@pytest.mark.parametrize(
+    "origin, destination, dep_date, ret_date, email, phone, fname, lname, b_day, b_month, b_year, id_number, gender",
+    [
+        (TEST_ORIGIN, TEST_DESTINATION, TEST_DEP_DATE, TEST_RET_DATE, 
+         "sude.test@gmail.com", "5551234567", "Sude", "Atesoglu", "04", "04", "2000", "12345678901", "Female")
+    ]
+)
+def test_case_3_critical_path(
+    driver, origin, destination, dep_date, ret_date, email, phone, fname, lname, b_day, b_month, b_year, id_number, gender
+):
+    logger.info("--- Starting Case 3: Critical Path (End-to-End Checkout Flow) ---")
+    
+    home_page = HomePage(driver)
+    results_page = FlightResultPage(driver)
+    passenger_page = PassengerInfoPage(driver)
+    
+    home_page.go_to(Config.BASE_URL)
+    home_page.enter_origin(origin)
+    home_page.enter_destination(destination)
+    home_page.select_departure_date(dep_date)
+    home_page.select_return_date(ret_date)
+    home_page.uncheck_hotel_offer()
+    
+    is_round_trip_search = home_page.is_round_trip()
+    
+    home_page.click_search()
+    results_page.wait_for_results_to_load()
+    
+    logger.info("Selecting the departure flight (Left Column)...")
+    results_page.select_first_flight(is_return=False, is_final_flight=not is_round_trip_search)
+
+    if is_round_trip_search:
+        logger.info("Round-trip explicitly detected from Home Page. Selecting return flight (Right Column)...")
+        results_page.select_first_flight(is_return=True, is_final_flight=True)
+    else:
+        logger.info("Single-trip detected. Proceeding directly to passenger info.")
+
+    passenger_page.fill_contact_info(email, phone)
+    passenger_page.fill_passenger_details(fname, lname, b_day, b_month, b_year, id_number, gender)
+    
+    passenger_page.proceed_to_payment()
+    
+    assert "odeme" in driver.current_url.lower() or "payment" in driver.current_url.lower(), \
+        "Failed to reach the payment screen!"
+    logger.info("Assertion Passed: Successfully reached the secure payment page.")
+
+    _save_success_screenshot(driver, "Case3_CriticalPath", "E2E", "Done")
+    logger.info("--- Case 3 Completed Successfully ---")
+    
 
 def _validate_departure_times(departure_times: list, start_time: str, end_time: str) -> None:
     """Validate all departure times fall within the specified range."""
