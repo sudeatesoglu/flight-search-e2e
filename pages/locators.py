@@ -40,3 +40,6 @@ class FlightResultPageLocators:
     THY_CHECKBOX = (By.CSS_SELECTOR, "input#TKairlines") 
     FLIGHT_CARD_AIRLINE_NAME = (By.CSS_SELECTOR, ".summary-marketing-airlines")
     FLIGHT_CARD_PRICE = (By.CSS_SELECTOR, "[data-testid='flightInfoPrice']")
+    SELECT_FIRST_FLIGHT_BTN = (By.XPATH, "(//button[contains(@class, 'action-select-btn')])[1]")
+    FIRST_PACKAGE_SELECTION = (By.XPATH, "(//div[contains(@class, 'provider-package__item')])[1]")
+    PROVIDER_SELECT_BTN = (By.CSS_SELECTOR, "[data-testid='providerSelectBtn']")
