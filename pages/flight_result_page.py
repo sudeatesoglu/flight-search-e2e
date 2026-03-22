@@ -170,3 +170,40 @@ class FlightResultPage(BasePage):
             logger.warning("No price elements found. Returning empty list.")
             return []
         
+
+    def select_first_flight(self) -> None:
+        """
+        Clicks the 'Select' button of the very first flight card in the results.
+        Intelligently handles package selections and "Seç ve İlerle" buttons for round-trips.
+        """
+        logger.info("Initiating selection of the first available flight.")
+        
+        try:
+            self.click_element_with_js(FlightResultPageLocators.SELECT_FIRST_FLIGHT_BTN)
+            logger.info("Clicked 'Seç' button on the first flight card.")
+        except ElementTimeoutException as e:
+            logger.error("Failed to find or click the first flight select button.")
+            raise e
+
+        logger.info("Checking if flight package options are displayed...")
+        try:
+            WebDriverWait(self.driver, 5).until(
+                EC.element_to_be_clickable(FlightResultPageLocators.FIRST_PACKAGE_SELECTION)
+            )
+            logger.info("Package options appeared. Selecting the first (basic) package.")
+            self.click_element_with_js(FlightResultPageLocators.FIRST_PACKAGE_SELECTION)
+            
+            try:
+                WebDriverWait(self.driver, 3).until(
+                    EC.presence_of_element_located(FlightResultPageLocators.PROVIDER_SELECT_BTN)
+                )
+                logger.info("'Seç ve İlerle' button detected. Clicking it to confirm departure selection.")
+                self.click_element_with_js(FlightResultPageLocators.PROVIDER_SELECT_BTN)
+            except TimeoutException:
+                pass
+
+        except TimeoutException:
+            logger.info("No package selection appeared. Proceeding to next step.")
+            
+        self.wait_for_flight_list_update()
+        
