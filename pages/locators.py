@@ -48,7 +48,13 @@ class FlightResultPageLocators:
     FIRST_PACKAGE_SELECTION = (By.XPATH, "(//div[contains(@class, 'provider-package__item')])[1]")
     PACKAGE_ITEMS = (By.CSS_SELECTOR, "div.provider-package__item")
     PROVIDER_SELECT_BTN = (By.CSS_SELECTOR, "[data-testid='providerSelectBtn']")
+    
+    CARD_DEPARTURE_TIME = (By.CSS_SELECTOR, "[data-testid='departureTime']")
+    CARD_ARRIVAL_TIME = (By.CSS_SELECTOR, "[data-testid='arrivalTime']")
+    CARD_DURATION = (By.CSS_SELECTOR, "[data-testid='departureFlightTime']") 
+    CARD_TRANSIT_INFO = (By.CSS_SELECTOR, ".summary-transit")
 
+    # Loading Indicator
     LOADER_SPINNER = (By.CSS_SELECTOR, ".weg-loader")
 
 
