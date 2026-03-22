@@ -60,7 +60,8 @@ class BasePage:
         """
         Simulate physical mouse click at the exact center coordinates of the element.
 
-        :param locator: Tuple of (By locator type, locator string)"""
+        :param locator: Tuple of (By locator type, locator string)
+        """
         logger.debug(f"Attempting to click with ActionChains: {locator}")
         try:
             element = self.wait.until(EC.presence_of_element_located(locator))
@@ -68,6 +69,22 @@ class BasePage:
             logger.info(f"Successfully clicked element with ActionChains: {locator}")
         except TimeoutException as e:
             logger.error(f"TimeoutException: Element {locator} not present for Action click.")
+            raise ElementTimeoutException(f"Element {locator} not present.") from e
+        
+    
+    def click_element_with_js(self, locator):
+        """
+        Click an element using JavaScript execution.
+            
+        :param locator: Tuple of (By locator type, locator string)
+        """
+        logger.debug(f"Attempting to click with JS: {locator}")
+        try:
+            element = self.wait.until(EC.presence_of_element_located(locator))
+            self.driver.execute_script("arguments[0].click();", element)
+            logger.info(f"Successfully clicked element with JS: {locator}")
+        except TimeoutException as e:
+            logger.error(f"TimeoutException: Element {locator} not present for JS click.")
             raise ElementTimeoutException(f"Element {locator} not present.") from e
 
 
