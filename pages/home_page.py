@@ -1,5 +1,5 @@
 from loguru import logger
-from pages.base_page import BasePage
+from pages.base_page import BasePage, ElementTimeoutException
 from pages.locators import HomePageLocators
 
 
@@ -96,6 +96,19 @@ class HomePage(BasePage):
         logger.info("Clicking the flight search button.")
         self.click_element(HomePageLocators.SEARCH_BUTTON)
 
+
+    def is_round_trip(self) -> bool:
+        """Returns True if the 'Gidiş-dönüş' (Round-trip) radio button is active."""
+        logger.info("Checking if 'Gidiş-dönüş' (Round-trip) is selected on the UI.")
+        try:
+            radio_input = self.find_element(HomePageLocators.ROUND_TRIP_RADIO)
+            is_checked = radio_input.get_attribute("checked") is not None
+            logger.info(f"Round-trip status based on radio button: {is_checked}")
+            return is_checked
+        except ElementTimeoutException:
+            logger.warning("Could not find the round-trip radio button.")
+            return False
+        
 
     def search_flights(self, origin: str, destination: str, dep_date: str, ret_date: str) -> None:
         """
