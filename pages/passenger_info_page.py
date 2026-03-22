@@ -1,6 +1,8 @@
 from loguru import logger
 from pages.base_page import BasePage
 from pages.locators import PassengerInfoPageLocators
+from selenium.webdriver.support import expected_conditions as EC
+from pages.locators import FlightResultPageLocators
 
 class PassengerInfoPage(BasePage):
     """Page Object for the Passenger Information and Checkout Page."""
@@ -18,9 +20,9 @@ class PassengerInfoPage(BasePage):
         self.input_text(PassengerInfoPageLocators.FIRST_NAME, first_name)
         self.input_text(PassengerInfoPageLocators.LAST_NAME, last_name)
         
-        self.input_text(PassengerInfoPageLocators.BIRTH_DAY, day)
-        self.input_text(PassengerInfoPageLocators.BIRTH_MONTH, month)
-        self.input_text(PassengerInfoPageLocators.BIRTH_YEAR, year)
+        self.select_dropdown(PassengerInfoPageLocators.BIRTH_DAY, day)
+        self.select_dropdown(PassengerInfoPageLocators.BIRTH_MONTH, month)
+        self.select_dropdown(PassengerInfoPageLocators.BIRTH_YEAR, year)
         
         self.input_text(PassengerInfoPageLocators.ID_NUMBER, id_number)
         
@@ -32,6 +34,15 @@ class PassengerInfoPage(BasePage):
             self.click_element_with_js(PassengerInfoPageLocators.GENDER_MALE)
 
     def proceed_to_payment(self) -> None:
-        """Click the continue button to navigate to the payment screen."""
-        logger.info("Clicking 'Ödemeye İlerle' (Continue to Payment) button.")
+        """Click the continue button and intelligently wait for the payment page to load."""
+        logger.info("Clicking 'Continue to Payment' button.")
         self.click_element_with_js(PassengerInfoPageLocators.CONTINUE_BTN)
+        
+        logger.info("Waiting for backend processing and redirection to the secure payment page...")
+        try:
+            from selenium.webdriver.support import expected_conditions as EC
+            self.wait.until(EC.presence_of_element_located(PassengerInfoPageLocators.PAYMENT_PAGE_INDICATOR))
+            logger.info("Successfully redirected to the payment page (Card Input detected).")
+        except Exception as e:
+            logger.error("Redirection to the payment page timed out!")
+            raise e

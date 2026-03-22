@@ -7,6 +7,10 @@ from pages.flight_result_page import FlightResultPage
 from pages.passenger_info_page import PassengerInfoPage
 from core.config import Config
 
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 # Constants
 TIME_FORMAT = "%H:%M"
 SCREENSHOT_DIR = "screenshots"
@@ -86,7 +90,7 @@ def test_case_2_turkish_airlines_price_sorting(
     "origin, destination, dep_date, ret_date, email, phone, fname, lname, b_day, b_month, b_year, id_number, gender",
     [
         (TEST_ORIGIN, TEST_DESTINATION, TEST_DEP_DATE, TEST_RET_DATE, 
-         "sude.test@gmail.com", "5551234567", "Sude", "Atesoglu", "04", "04", "2000", "12345678901", "Female")
+         "sude.test@gmail.com", "5551234567", "Sude", "Atesoglu", "04", "04", "2000", "58880076462", "Female")
     ]
 )
 def test_case_3_critical_path(
@@ -124,8 +128,10 @@ def test_case_3_critical_path(
     
     passenger_page.proceed_to_payment()
     
-    assert "odeme" in driver.current_url.lower() or "payment" in driver.current_url.lower(), \
-        "Failed to reach the payment screen!"
+    payment_indicator_present = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "[data-testid='cardNumber']"))
+    )
+    assert payment_indicator_present, "Failed to reach the payment screen! Card input not found."
     logger.info("Assertion Passed: Successfully reached the secure payment page.")
 
     _save_success_screenshot(driver, "Case3_CriticalPath", "E2E", "Done")

@@ -71,7 +71,7 @@ class PassengerInfoPageLocators:
     
     GENDER_FEMALE = (By.XPATH, "//label[contains(., 'Kadın') or contains(., 'Female')]")
     GENDER_MALE = (By.XPATH, "//label[contains(., 'Erkek') or contains(., 'Male')]")
-    # GENDER_MALE = (By.CSS_SELECTOR, "div.col-md-6 div:nth-of-type(1) > label")
-    # GENDER_FEMALE = (By.CSS_SELECTOR, "div.col-md-6 div:nth-of-type(2) > label")
     
     CONTINUE_BTN = (By.CSS_SELECTOR, "#continue-button")
+
+    PAYMENT_PAGE_INDICATOR = (By.CSS_SELECTOR, "[data-testid='cardNumber']")
