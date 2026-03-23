@@ -54,44 +54,45 @@ This project was built to satisfy the following core requirements:
 
 ## Running the Tests (CLI Usage)
 
-The framework is configured via `pyproject.toml` to always output live logs (`-v -s`). You can override the default search parameters using custom CLI flags. Tests are configured to run locally across both Chrome and Firefox based on `.env`.
+The framework is strictly built around dynamic data injection to fulfill the requirement: *"Cities should be parameterized"*. 
 
-**Run the full suite with custom route and dates:**
-```bash
-uv run pytest tests/ --origin Antalya --destination Istanbul --dep-date 2026-05-10 --ret-date 2026-05-15 --start-time 08:00 --end-time 12:00
-```
+The default fallback values are configured in `conftest.py` as:
+- Origin: `Istanbul`
+- Destination: `Lefkosa`
 
-**Run ONLY the Data Analysis & Visualization scenario:**
+To run the cases exactly as requested in the Case Study (e.g., Istanbul to Ankara for Cases 1 & 2), you **must provide the explicit CLI arguments**. Tests are configured to run locally across both Chrome and Firefox based on `.env`.
+
+**Run the full suite with explicit Case Study parameters:**
 ```bash
-uv run pytest tests/test_data_analysis.py --origin Izmir --destination Ankara --dep-date 2026-06-01 --ret-date 2026-06-05
+uv run pytest tests/ --origin Istanbul --destination Ankara --dep-date 2026-05-10 --ret-date 2026-05-15 --start-time 10:00 --end-time 18:00
 ```
 
 ## Running the Tests Individually
 
-You can run each case individually using the pytest `-k` flag to specify the test name. Adding `--alluredir=allure-results` will generate report data for that specific run.
+You can run each case individually using the pytest `-k` flag to specify the exact function name. We pass the explicit `--origin` and `--destination` parameters required for each scenario as per the test document.
 
 **Case 1: Basic Flight Search and Time Filter**
-Validates that flights are correctly filtered between 10:00 AM and 6:00 PM.
+Validates that flights from Istanbul to Ankara are correctly filtered between 10:00 AM and 6:00 PM.
 ```bash
-uv run pytest tests/test_flight_search.py -k "test_case_1_departure_time_filtering" -v -s
+uv run pytest tests/test_flight_search.py -k "test_case_1_basic_flight_search_and_time_filter" --origin Istanbul --destination Ankara --start-time 10:00 --end-time 18:00
 ```
 
 **Case 2: Price Sorting for Turkish Airlines**
-Validates that Turkish Airlines flights are correctly filtered and prices are sorted in strict ascending order.
+Validates that Turkish Airlines flights (Istanbul -> Ankara) are correctly filtered and prices are sorted in strict ascending order.
 ```bash
-uv run pytest tests/test_flight_search.py -k "test_case_2_turkish_airlines_price_sorting" -v -s
+uv run pytest tests/test_flight_search.py -k "test_case_2_turkish_airlines_price_sorting" --origin Istanbul --destination Ankara
 ```
 
 **Case 3: Critical User Path (End-to-End Checkout)**
 Executes the full booking journey from search to the credit card payment step.
 ```bash
-uv run pytest tests/test_flight_search.py -k "test_case_3_critical_path" -v -s
+uv run pytest tests/test_flight_search.py -k "test_case_3_critical_path"
 ```
 
 **Case 4: Data Scraping, Analysis, and Categorization**
-Scrapes flight results into a CSV, computes cost-effectiveness, and generates visualization charts (Heatmap & Bar charts).
+Scrapes flight results (Istanbul -> Nicosia route as requested) into a CSV, computes cost-effectiveness, and generates visualization charts (Heatmap & Bar charts).
 ```bash
-uv run pytest tests/test_data_analysis.py -v -s
+uv run pytest tests/test_data_analysis.py --origin Istanbul --destination Lefkosa
 ```
 
 ## Outputs & Reports
