@@ -66,7 +66,7 @@ uv run pytest tests/ --origin Antalya --destination Istanbul --dep-date 2026-05-
 
 **Run ONLY the Data Analysis & Visualization scenario:**
 ```bash
-uv run pytest tests/test_data_analysis.py --origin Izmir --destination Ankara --dep-date 2026-06-01
+pytest tests/test_data_analysis.py -v -s --origin Izmir --destination Ankara --dep-date 2026-06-01 --ret-date 2026-06-05
 ```
 
 **Run the Critical Path (Checkout) with Allure Reporting:**
