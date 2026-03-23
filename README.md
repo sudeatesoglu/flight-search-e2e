@@ -61,17 +61,17 @@ The framework is configured via `pyproject.toml` to always output live logs (`-v
 
 **Run the full suite with custom route and dates:**
 ```bash
-pytest tests/ --origin Antalya --destination Istanbul --dep-date 2026-05-10 --ret-date 2026-05-15 --start-time 08:00 --end-time 12:00
+uv run pytest tests/ --origin Antalya --destination Istanbul --dep-date 2026-05-10 --ret-date 2026-05-15 --start-time 08:00 --end-time 12:00
 ```
 
 **Run ONLY the Data Analysis & Visualization scenario:**
 ```bash
-pytest tests/test_data_analysis.py --origin Izmir --destination Ankara --dep-date 2026-06-01
+uv run pytest tests/test_data_analysis.py --origin Izmir --destination Ankara --dep-date 2026-06-01
 ```
 
 **Run the Critical Path (Checkout) with Allure Reporting:**
 ```bash
-pytest tests/test_flight_search.py -k "critical_path" --alluredir=allure-results
+uv run pytest tests/test_flight_search.py -k "critical_path" --alluredir=allure-results
 ```
 
 ## Outputs & Reports
