@@ -1,0 +1,58 @@
+Airline,Departure Time,Arrival Time,Duration,Transit,Price
+AJet,11:05,12:35,1sa 30dk,Direkt Uçuş,995.99
+AJet,13:15,14:45,1sa 30dk,Direkt Uçuş,995.99
+AJet,18:55,20:25,1sa 30dk,Direkt Uçuş,995.99
+AJet,22:20,23:50,1sa 30dk,Direkt Uçuş,995.99
+Pegasus,12:20,13:50,1sa 30dk,Direkt Uçuş,1202.99
+Pegasus,14:55,16:25,1sa 30dk,Direkt Uçuş,1202.99
+Pegasus,16:40,18:10,1sa 30dk,Direkt Uçuş,1202.99
+Pegasus,18:50,20:20,1sa 30dk,Direkt Uçuş,1202.99
+Pegasus,20:45,22:15,1sa 30dk,Direkt Uçuş,1202.99
+Pegasus,22:55,00:25,1sa 30dk,Direkt Uçuş,1202.99
+Pegasus,11:45,13:20,1sa 35dk,Direkt Uçuş,1817.99
+Pegasus,19:30,21:05,1sa 35dk,Direkt Uçuş,1900.99
+AJet,05:15,12:00,6sa 45dk,1 Aktarma,2538.99
+AJet,05:15,19:25,14sa 10dk,1 Aktarma,2538.99
+Türk Hava Yolları,01:10,02:45,1sa 35dk,Direkt Uçuş,2630.99
+Türk Hava Yolları,18:15,19:55,1sa 40dk,Direkt Uçuş,2630.99
+Türk Hava Yolları,22:15,23:55,1sa 40dk,Direkt Uçuş,2630.99
+Türk Hava Yolları,19:40,21:25,1sa 45dk,Direkt Uçuş,2630.99
+Pegasus,06:00,07:30,1sa 30dk,Direkt Uçuş,2647.99
+AJet,10:00,16:15,6sa 15dk,1 Aktarma,2671.99
+AJet,12:55,20:25,7sa 30dk,1 Aktarma,2671.99
+AJet,10:00,20:25,10sa 25dk,1 Aktarma,2671.99
+AJet,05:25,16:15,10sa 50dk,1 Aktarma,2671.99
+AJet,01:30,16:15,14sa 45dk,1 Aktarma,2671.99
+AJet,05:25,20:25,15sa,1 Aktarma,2671.99
+AJet,23:00,20:25,21sa 25dk,1 Aktarma,2671.99
+AJet,07:15,08:45,1sa 30dk,Direkt Uçuş,2759.99
+AJet,23:00,08:25,9sa 25dk,1 Aktarma,2871.99
+AJet,12:55,08:25,19sa 30dk,1 Aktarma,2871.99
+AJet,10:00,08:25,22sa 25dk,1 Aktarma,2871.99
+AJet,00:05,12:00,11sa 55dk,1 Aktarma,3185.99
+AJet,00:05,19:25,19sa 20dk,1 Aktarma,3185.99
+AJet,05:25,09:55,4sa 30dk,1 Aktarma,3306.99
+AJet,15:15,20:25,5sa 10dk,1 Aktarma,3306.99
+AJet,01:30,09:55,8sa 25dk,1 Aktarma,3306.99
+AJet,19:55,20:25,1g 30dk,1 Aktarma,3306.99
+AJet,14:20,19:25,5sa 5dk,1 Aktarma,3485.99
+AJet,19:15,12:00,16sa 45dk,1 Aktarma,3485.99
+AJet,14:20,12:00,21sa 40dk,1 Aktarma,3485.99
+AJet,19:15,19:25,1g 10dk,1 Aktarma,3485.99
+AJet,19:55,08:25,12sa 30dk,1 Aktarma,3506.99
+AJet,15:15,08:25,17sa 10dk,1 Aktarma,3506.99
+AJet,23:00,16:15,17sa 15dk,1 Aktarma,3782.99
+Türk Hava Yolları,06:45,08:20,1sa 35dk,Direkt Uçuş,3917.99
+Türk Hava Yolları,13:15,14:50,1sa 35dk,Direkt Uçuş,3917.99
+Türk Hava Yolları,10:00,11:40,1sa 40dk,Direkt Uçuş,3917.99
+AJet,01:30,08:25,6sa 55dk,1 Aktarma,4365.99
+AJet,19:55,16:15,20sa 20dk,1 Aktarma,4365.99
+AJet,15:15,16:15,1g 1sa,1 Aktarma,4365.99
+Türk Hava Yolları,16:20,18:00,1sa 40dk,Direkt Uçuş,4580.99
+Türk Hava Yolları,08:25,13:00,4sa 35dk,1 Aktarma,4691.99
+AJet,12:00,19:25,7sa 25dk,1 Aktarma,5140.99
+AJet,12:00,12:00,1g,1 Aktarma,5140.99
+Türk Hava Yolları,06:15,13:00,6sa 45dk,1 Aktarma,5415.99
+AJet,18:05,08:25,14sa 20dk,1 Aktarma,5539.99
+AJet,18:05,16:15,22sa 10dk,1 Aktarma,6427.99
+Pegasus,07:45,09:15,1sa 30dk,Direkt Uçuş,8119.99
