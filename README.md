@@ -73,25 +73,25 @@ You can run each case individually using the pytest `-k` flag to specify the tes
 **Case 1: Basic Flight Search and Time Filter**
 Validates that flights are correctly filtered between 10:00 AM and 6:00 PM.
 ```bash
-`uv run pytest tests/test_flight_search.py -k "test_case_1_departure_time_filtering" -v -s`
+uv run pytest tests/test_flight_search.py -k "test_case_1_departure_time_filtering" -v -s
 ```
 
 **Case 2: Price Sorting for Turkish Airlines**
 Validates that Turkish Airlines flights are correctly filtered and prices are sorted in strict ascending order.
 ```bash
-`uv run pytest tests/test_flight_search.py -k "test_case_2_turkish_airlines_price_sorting" -v -s`
+uv run pytest tests/test_flight_search.py -k "test_case_2_turkish_airlines_price_sorting" -v -s
 ```
 
 **Case 3: Critical User Path (End-to-End Checkout)**
 Executes the full booking journey from search to the credit card payment step.
 ```bash
-`uv run pytest tests/test_flight_search.py -k "test_case_3_critical_path" -v -s`
+uv run pytest tests/test_flight_search.py -k "test_case_3_critical_path" -v -s
 ```
 
 **Case 4: Data Scraping, Analysis, and Categorization**
 Scrapes flight results into a CSV, computes cost-effectiveness, and generates visualization charts (Heatmap & Bar charts).
 ```bash
-`uv run pytest tests/test_data_analysis.py -v -s`
+uv run pytest tests/test_data_analysis.py -v -s
 ```
 
 ## Outputs & Reports
