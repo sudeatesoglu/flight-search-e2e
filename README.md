@@ -1,43 +1,35 @@
 # Flight Search E2E Test & Data Analysis Pipeline
 
-This repository contains a comprehensive End-to-End (E2E) Test Automation and Data Analysis Framework designed for a flight search platform. It goes beyond traditional UI testing by incorporating web scraping, dynamic CLI parameterization, and cost-effectiveness data visualization.
+This repository contains a comprehensive End-to-End (E2E) Test Automation and Data Analysis Framework designed for a flight search platform (Enuygun.com). It goes beyond traditional UI testing by incorporating web scraping, dynamic CLI parameterization, and cost-effectiveness data visualization.
 
-Built with **Selenium**, **Pytest**, and **Pandas**, it follows strict Page Object Model (POM), Object-Oriented Programming (OOP), and Clean Code principles (e.g., Dataclasses for mock data).
+Built with **Selenium**, **Pytest**, and **Pandas**, it follows strict Page Object Model (POM), Object-Oriented Programming (OOP), and Clean Code principles.
 
-## Tech Stack
+## Case Study Requirements & Implementations
+
+This project was built to satisfy the following core requirements:
+
+1. **Case 1 (Basic Flight Search & Time Filter):** Implemented in `test_case_1_departure_time_filtering`. Validates UI filtering for a parameterized route, date, and 10:00 AM - 6:00 PM time blocks.
+2. **Case 2 (Price Sorting for Turkish Airlines):** Implemented in `test_case_2_turkish_airlines_price_sorting`. Ensures UI applies strict filters for Turkish Airlines and validates that prices are strictly ascending.
+3. **Case 3 (Critical Path Testing):** Implemented in `test_case_3_critical_path`. Navigates through search, flight selections (departure and return), passenger form completion, and halts at the secure credit card iframe injection to validate the complete booking funnel.
+4. **Case 4 (Analysis and Categorization):** Implemented in `test_data_analysis.py`. Scrapes all flights for the route, saves to a dynamic CSV, calculates cost-effectiveness scores, and generates Seaborn heatmaps (Price by Time Slot) and Matplotlib bar charts (Min/Avg/Max prices).
+
+## Technical Stack & Architecture
 
 - **Language:** Python 3.14+
 - **Test Framework:** Pytest (with CLI customization)
 - **Browser Automation:** Selenium WebDriver 4.41.0+
-- **Data Analysis & Vis:** Pandas, Matplotlib, Seaborn, NumPy
-- **Reporting:** Allure Reports
-- **Logging:** Loguru
+- **Design Pattern:** Page Object Model (POM) & Object-Oriented Programming (OOP)
+- **Data Analysis & Vis:** Pandas, Matplotlib, Seaborn
+- **Reporting:** Allure Reports (with Epic/Feature/Story decorators and automatic screenshot formatting)
+- **Logging:** Loguru (real-time console and file logging)
 - **Environment Management:** Python-dotenv
-- **Package Manager:** `uv` (recommended) or `pip`
+- **Cross-Browser Testing:** Configurable for **Chrome** and **Firefox**
 
-## Key Features
-
-- **Dynamic CLI Execution:** Run tests for any route and date directly from the terminal (e.g., `--origin Izmir --destination Ankara --dep-date 2026-06-10`).
-- **Smart Calendar Navigation:** Includes a dynamic loop that automatically pages through calendar months until the target date is injected into the DOM.
-- **Data Scraping & Analysis:** Extracts flight prices, durations, and airlines into CSVs. Calculates a normalized "Cost-Effectiveness Score" (70% Price, 30% Duration).
-- **High-Res Visualizations:** Generates Seaborn heatmaps (Price by Time Slot) and Matplotlib grouped bar charts (Min/Avg/Max prices).
-- **Master Comparison Log:** Appends summary metrics of every test run into a central `flight_comparison_master.csv` to track price changes across different routes/dates.
-- **Separation of Concerns:** Uses Python `@dataclass` to isolate mock passenger and payment data from the core test logic.
-- **Automated Screenshots & Allure:** Captures visual evidence on failure and compiles comprehensive HTML reports.
-
-## Prerequisites
-
-- Python 3.14+
-- Chrome and/or Firefox browsers installed
-- **Allure Commandline** (for HTML reports):
-  - macOS: `brew install allure`
-  - Windows: `scoop install allure` or `npm install -g allure-commandline`
-
-## 🛠️ Installation
+## Prerequisites & Setup
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/sudeatesoglu/flight-search-e2e.git](https://github.com/sudeatesoglu/flight-search-e2e.git)
+   git clone https://github.com/sudeatesoglu/flight-search-e2e.git
    cd flight-search-e2e
    ```
 
@@ -46,18 +38,23 @@ Built with **Selenium**, **Pytest**, and **Pandas**, it follows strict Page Obje
    ```bash
    uv venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   uv pip install -r pyproject.toml
+   uv pip install -e .
    ```
 
 3. **Environment Setup:**
    ```bash
    cp .env.example .env
-   # Edit .env to set your BASE_URL, BROWSER, etc.
+   ```
+   Open `.env` and configure your settings.
+   To switch browsers, simply change `BROWSER` in the `.env` file:
+   ```env
+   BROWSER=chrome   # or BROWSER=firefox
+   HEADLESS=true
    ```
 
 ## Running the Tests (CLI Usage)
 
-The framework is configured via `pyproject.toml` to always output live logs (`-v -s`). You can override the default search parameters using custom CLI flags.
+The framework is configured via `pyproject.toml` to always output live logs (`-v -s`). You can override the default search parameters using custom CLI flags. Tests are configured to run locally across both Chrome and Firefox based on `.env`.
 
 **Run the full suite with custom route and dates:**
 ```bash
@@ -66,18 +63,48 @@ uv run pytest tests/ --origin Antalya --destination Istanbul --dep-date 2026-05-
 
 **Run ONLY the Data Analysis & Visualization scenario:**
 ```bash
-pytest tests/test_data_analysis.py -v -s --origin Izmir --destination Ankara --dep-date 2026-06-01 --ret-date 2026-06-05
+uv run pytest tests/test_data_analysis.py --origin Izmir --destination Ankara --dep-date 2026-06-01 --ret-date 2026-06-05
 ```
 
-**Run the Critical Path (Checkout) with Allure Reporting:**
-```bash
-uv run pytest tests/test_flight_search.py -k "critical_path" --alluredir=allure-results
-```
+## Running the Tests Individually
+
+You can run each case individually using the pytest `-k` flag to specify the test name. Adding `--alluredir=allure-results` will generate report data for that specific run.
+
+**Case 1: Basic Flight Search and Time Filter**
+Validates that flights are correctly filtered between 10:00 AM and 6:00 PM.
+`uv run pytest tests/test_flight_search.py -k "test_case_1_departure_time_filtering" -v -s`
+
+**Case 2: Price Sorting for Turkish Airlines**
+Validates that Turkish Airlines flights are correctly filtered and prices are sorted in strict ascending order.
+`uv run pytest tests/test_flight_search.py -k "test_case_2_turkish_airlines_price_sorting" -v -s`
+
+**Case 3: Critical User Path (End-to-End Checkout)**
+Executes the full booking journey from search to the credit card payment step.
+`uv run pytest tests/test_flight_search.py -k "test_case_3_critical_path" -v -s`
+
+**Case 4: Data Scraping, Analysis, and Categorization**
+Scrapes flight results into a CSV, computes cost-effectiveness, and generates visualization charts (Heatmap & Bar charts).
+`uv run pytest tests/test_data_analysis.py -v -s`
 
 ## Outputs & Reports
 
-### 1. Live Execution Logs
-Powered by Loguru, the framework provides real-time, colorful console output and saves history to `test_execution.log`.
+### 1. Allure Reports (Screenshots on Failure)
+The framework uses Allure for comprehensive test reporting, including `@allure.step` definitions, `@allure.epic` categorization, and **automatic screenshot captures on test failures**. Data Analysis charts (PNG) and Pandas datasets (CSV) are also automatically attached to the Allure report!
+
+To generate and view the report:
+```bash
+# Run tests and save Allure data to the allure-results folder
+uv run pytest tests/ --alluredir=allure-results
+
+# Serve the report locally
+allure serve allure-results
+```
+
+*(Note: Requires Allure Commandline to be installed on your machine. e.g., `brew install allure`)*
+
+### 2. Live Execution Logs
+Powered by Loguru, the framework provides real-time, colorful console output and saves execution history to `test_execution.log`.
+
 ```text
 2026-03-23 10:41:42.501 | INFO     | pages.home_page:_select_date_from_calendar:120 - Searching for Date: 2026-05-10 in the calendar...
 2026-03-23 10:41:43.564 | INFO     | pages.base_page:click_element_with_js:85 - Successfully clicked element with JS: ('css selector', "[data-testid$='month-forward-button']")

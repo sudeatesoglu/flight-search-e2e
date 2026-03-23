@@ -1,4 +1,5 @@
 import pytest
+import allure
 from datetime import datetime
 from loguru import logger
 from dataclasses import dataclass
@@ -41,57 +42,84 @@ class MockCreditCard:
     cc_cvv: str = "123"
 
 
+@allure.epic("Flight Search System")
+@allure.feature("Flight Search & Filter")
+@allure.story("Filter by Departure Time")
+@allure.title("Test Case 1: Departure Time Filtering ({origin} -> {destination})")
+@allure.description("Perform a basic flight search and validate that all displayed flights fall within the selected departure time range.")
+@allure.severity(allure.severity_level.NORMAL)
+@allure.label("layer", "e2e")
 def test_case_1_basic_flight_search_and_time_filter(
     driver, origin, destination, dep_date, ret_date, start_time, end_time
 ):
     """Search for flights and validate departure times fall within filter range."""
     logger.info(f"Starting Case 1: {origin} to {destination} | Filter: {start_time}-{end_time}")
     
-    home_page = HomePage(driver)
-    results_page = FlightResultPage(driver)
-    
-    home_page.go_to(Config.BASE_URL)
-    home_page.search_flights(origin, destination, dep_date, ret_date)
-    results_page.wait_for_results_to_load()
-    results_page.apply_departure_time_filter(start_time, end_time)
-    
-    departure_times = results_page.get_departure_times()
-    assert departure_times, "No flights found after applying time filter."
-    
-    _validate_departure_times(departure_times, start_time, end_time)
+    with allure.step("Navigate to HomePage and Search"):
+        home_page = HomePage(driver)
+        results_page = FlightResultPage(driver)
+        home_page.go_to(Config.BASE_URL)
+        home_page.search_flights(origin, destination, dep_date, ret_date)
+        
+    with allure.step(f"Wait for results and Filter by Time ({start_time}-{end_time})"):
+        results_page.wait_for_results_to_load()
+        results_page.apply_departure_time_filter(start_time, end_time)
+        
+    with allure.step("Validate Departure Times"):
+        departure_times = results_page.get_departure_times()
+        assert departure_times, "No flights found after applying time filter."
+        _validate_departure_times(departure_times, start_time, end_time)
     
     _save_success_screenshot(driver, "Case1", start_time, end_time)
     logger.info("Case 1 completed successfully")
 
 
+@allure.epic("Flight Search System")
+@allure.feature("Airline Specific Search")
+@allure.story("Turkish Airlines Price Sorting")
+@allure.title("Test Case 2: Turkish Airlines Price Sorting ({origin} -> {destination})")
+@allure.description("Search for flights, filter by Turkish Airlines, and validate that prices are displayed in completely ascending order.")
+@allure.severity(allure.severity_level.CRITICAL)
+@allure.label("layer", "e2e")
 def test_case_2_turkish_airlines_price_sorting(
     driver, origin, destination, dep_date, ret_date, start_time, end_time
 ):
     """Validate Turkish Airlines filtering and price sorting in ascending order."""
     logger.info(f"Starting Case 2: {origin} to {destination} - Turkish Airlines pricing")
     
-    home_page = HomePage(driver)
-    results_page = FlightResultPage(driver)
-    
-    home_page.go_to(Config.BASE_URL)
-    home_page.search_flights(origin, destination, dep_date, ret_date)
-    results_page.wait_for_results_to_load()
-    results_page.apply_departure_time_filter(start_time, end_time)
-    results_page.apply_airline_filter()
-    
-    airlines = results_page.get_displayed_airlines()
-    prices = results_page.get_displayed_prices()
-    
-    assert airlines, "No airlines detected after filtering."
-    assert prices, "No prices detected after filtering."
-    
-    _validate_turkish_airlines_only(airlines)
-    _validate_prices_ascending(prices)
+    with allure.step("Search Flights and Wait for Loading"):
+        home_page = HomePage(driver)
+        results_page = FlightResultPage(driver)
+        home_page.go_to(Config.BASE_URL)
+        home_page.search_flights(origin, destination, dep_date, ret_date)
+        results_page.wait_for_results_to_load()
+        
+    with allure.step("Apply Time and Airline Filters"):
+        results_page.apply_departure_time_filter(start_time, end_time)
+        results_page.apply_airline_filter()
+        
+    with allure.step("Extract Metrics and Assert Validation"):
+        airlines = results_page.get_displayed_airlines()
+        prices = results_page.get_displayed_prices()
+        
+        assert airlines, "No airlines detected after filtering."
+        assert prices, "No prices detected after filtering."
+        
+        _validate_turkish_airlines_only(airlines)
+        _validate_prices_ascending(prices)
     
     _save_success_screenshot(driver, "Case2_THY", start_time, end_time)
     logger.info("Case 2 completed successfully")
 
 
+@allure.epic("Flight Booking and Reservation")
+@allure.feature("End to End Checkout")
+@allure.story("Critical Path for Valid Users")
+@allure.title("Test Case 3: Complete Critical User Path ({origin} -> {destination})")
+@allure.description("Validates the entire process starting from search, selecting flights, entering passenger information, and processing a payment form.")
+@allure.severity(allure.severity_level.BLOCKER)
+@allure.link("https://www.enuygun.com", name="Enuygun Web Platform")
+@allure.label("layer", "e2e")
 def test_case_3_critical_path(driver, origin, destination, dep_date, ret_date):
     logger.info("--- Starting Case 3: Critical Path (End-to-End Checkout Flow) ---")
     
@@ -103,43 +131,49 @@ def test_case_3_critical_path(driver, origin, destination, dep_date, ret_date):
     passenger_page = PassengerInfoPage(driver)
     payment_page = PaymentPage(driver)
     
-    home_page.go_to(Config.BASE_URL)
-    home_page.enter_origin(origin)
-    home_page.enter_destination(destination)
-    home_page.select_departure_date(dep_date)
-    home_page.select_return_date(ret_date)
-    home_page.uncheck_hotel_offer()
     
-    is_round_trip_search = home_page.is_round_trip()
-    
-    home_page.click_search()
-    results_page.wait_for_results_to_load()
-    
-    logger.info("Selecting the departure flight (Left Column)...")
-    results_page.select_first_flight(is_return=False, is_final_flight=not is_round_trip_search)
+    @allure.step("Fill Passenger Information")
+    def _fill_passenger_step():
+        passenger_page.fill_contact_info(passenger.email, passenger.phone)
+        passenger_page.fill_passenger_details(
+            passenger.fname, passenger.lname, passenger.b_day, 
+            passenger.b_month, passenger.b_year, passenger.id_number, passenger.gender
+        )
+        passenger_page.proceed_to_payment()
 
-    if is_round_trip_search:
-        logger.info("Round-trip explicitly detected from Home Page. Selecting return flight (Right Column)...")
-        results_page.select_first_flight(is_return=True, is_final_flight=True)
-    else:
-        logger.info("Single-trip detected. Proceeding directly to passenger info.")
+    with allure.step("Navigate to Enuygun and Search Flight"):
+        home_page.go_to(Config.BASE_URL)
+        home_page.enter_origin(origin)
+        home_page.enter_destination(destination)
+        home_page.select_departure_date(dep_date)
+        home_page.select_return_date(ret_date)
+        home_page.uncheck_hotel_offer()
+        is_round_trip_search = home_page.is_round_trip()
+        home_page.click_search()
 
-    passenger_page.fill_contact_info(passenger.email, passenger.phone)
-    passenger_page.fill_passenger_details(
-        passenger.fname, passenger.lname, passenger.b_day, 
-        passenger.b_month, passenger.b_year, passenger.id_number, passenger.gender
-    )
-    passenger_page.proceed_to_payment()
+    with allure.step("Select Departure and Return Flights"):
+        results_page.wait_for_results_to_load()
+        logger.info("Selecting the departure flight (Left Column)...")
+        results_page.select_first_flight(is_return=False, is_final_flight=not is_round_trip_search)
+
+        if is_round_trip_search:
+            logger.info("Round-trip explicitly detected from Home Page. Selecting return flight (Right Column)...")
+            results_page.select_first_flight(is_return=True, is_final_flight=True)
+        else:
+            logger.info("Single-trip detected. Proceeding directly to passenger info.")
+
+    _fill_passenger_step()
     
-    payment_indicator_present = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, "[data-testid='cardNumber']"))
-    )
-    assert payment_indicator_present, "Failed to reach the payment screen! Card input not found."
-    logger.info("Assertion Passed: Successfully reached the secure payment page.")
+    with allure.step("Verify Payment Page and Fill CC Form"):
+        payment_indicator_present = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "[data-testid='cardNumber']"))
+        )
+        assert payment_indicator_present, "Failed to reach the payment screen! Card input not found."
+        logger.info("Assertion Passed: Successfully reached the secure payment page.")
 
-    payment_page.handle_membership_popup()
-    payment_page.fill_credit_card(card.cc_no, card.cc_month_idx, card.cc_year_idx, card.cc_cvv)
-    payment_page.submit_payment()
+        payment_page.handle_membership_popup()
+        payment_page.fill_credit_card(card.cc_no, card.cc_month_idx, card.cc_year_idx, card.cc_cvv)
+        payment_page.submit_payment()
 
     logger.info("Assertion Passed: Critical path completed up to payment submission.")
 
