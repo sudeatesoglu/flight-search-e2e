@@ -12,6 +12,7 @@ class HomePageLocators:
     DESTINATION_FIRST_OPTION = (By.CSS_SELECTOR, "[data-testid='endesign-flight-destination-autosuggestion-option-item-0']")
     HOTEL_CHECKBOX_CHECKED = (By.CSS_SELECTOR, "[data-testid='flight-oneWayCheckbox-checked-label']")
     ROUND_TRIP_RADIO = (By.CSS_SELECTOR, "[data-testid='search-round-trip-input']")
+    CALENDAR_NEXT_BUTTON = (By.CSS_SELECTOR, "[data-testid$='month-forward-button']")
     
     @staticmethod
     def get_date_locator(date_string: str) -> tuple[str, str]:

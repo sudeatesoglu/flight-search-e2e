@@ -108,12 +108,6 @@ class FlightDataAnalyzer:
         return output_path
 
 
-@pytest.mark.parametrize(
-    "origin, destination, dep_date, ret_date",
-    [
-        ("Istanbul", "Lefkosa", "2026-04-15", "2026-04-20"),
-    ]
-)
 def test_case_4_analysis_and_categorization(driver, origin, destination, dep_date, ret_date):
     """
     End-to-end test that satisfies Case 4: Search, Scrape, Analyze, and Categorize.

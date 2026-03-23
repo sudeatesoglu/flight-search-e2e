@@ -16,6 +16,41 @@ from core.config import Config
 # Configure Loguru globally to not add a new file handler on every test iteration
 logger.add('test_execution.log', rotation='10 MB', level='INFO')
 
+# CLI Options for Test Parameters
+def pytest_addoption(parser):
+    """Adds custom command-line options for test configuration."""
+    parser.addoption("--origin", action="store", default="Istanbul", help="Origin city (e.g., Istanbul)")
+    parser.addoption("--destination", action="store", default="Lefkosa", help="Destination city (e.g., Lefkosa)")
+    parser.addoption("--dep-date", action="store", default="2026-04-15", help="Departure date (YYYY-MM-DD)")
+    parser.addoption("--ret-date", action="store", default="2026-04-20", help="Return date (YYYY-MM-DD)")
+    parser.addoption("--start-time", action="store", default="10:00", help="Filter start time (e.g., 10:00)")
+    parser.addoption("--end-time", action="store", default="18:00", help="Filter end time (e.g., 18:00)")
+
+@pytest.fixture
+def origin(request):
+    return request.config.getoption("--origin")
+
+@pytest.fixture
+def destination(request):
+    return request.config.getoption("--destination")
+
+@pytest.fixture
+def dep_date(request):
+    return request.config.getoption("--dep-date")
+
+@pytest.fixture
+def ret_date(request):
+    return request.config.getoption("--ret-date")
+
+@pytest.fixture
+def start_time(request):
+    return request.config.getoption("--start-time")
+
+@pytest.fixture
+def end_time(request):
+    return request.config.getoption("--end-time")
+
+
 # Pytest Hook for Reporting and Screenshot on Failure
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):

@@ -1,6 +1,7 @@
 import pytest
 from datetime import datetime
 from loguru import logger
+from dataclasses import dataclass
 
 from pages.home_page import HomePage
 from pages.flight_result_page import FlightResultPage
@@ -15,21 +16,31 @@ from selenium.webdriver.support.ui import WebDriverWait
 # Constants
 TIME_FORMAT = "%H:%M"
 SCREENSHOT_DIR = "screenshots"
-TEST_ORIGIN = "Istanbul"
-TEST_DESTINATION = "Ankara"
-TEST_DEP_DATE = "2026-04-15"
-TEST_RET_DATE = "2026-04-20"
-TEST_START_TIME = "10:00"
-TEST_END_TIME = "18:00"
 TURKISH_AIRLINES_NAMES = ("Türk Hava Yolları", "THY")
 
+# Mock Data Classes for Passenger and Credit Card Information
+@dataclass
+class MockPassenger:
+    """Mock verileri tutan modern ve temiz bir veri sınıfı."""
+    email: str = "sude.test@gmail.com"
+    phone: str = "5551234567"
+    fname: str = "Sude"
+    lname: str = "Atesoglu"
+    id_number: str = "58880076462"
+    b_day: str = "04"
+    b_month: str = "04"
+    b_year: str = "2000"
+    gender: str = "Female"
+    
+@dataclass
+class MockCreditCard:
+    """Kredi kartı verilerini tutan sınıf."""
+    cc_no: str = "4242424242424242"
+    cc_month_idx: str = "0"
+    cc_year_idx: str = "1"
+    cc_cvv: str = "123"
 
-@pytest.mark.parametrize(
-    "origin, destination, dep_date, ret_date, start_time, end_time",
-    [
-        (TEST_ORIGIN, TEST_DESTINATION, TEST_DEP_DATE, TEST_RET_DATE, TEST_START_TIME, TEST_END_TIME)
-    ]
-)
+
 def test_case_1_basic_flight_search_and_time_filter(
     driver, origin, destination, dep_date, ret_date, start_time, end_time
 ):
@@ -53,12 +64,6 @@ def test_case_1_basic_flight_search_and_time_filter(
     logger.info("Case 1 completed successfully")
 
 
-@pytest.mark.parametrize(
-    "origin, destination, dep_date, ret_date, start_time, end_time",
-    [
-        (TEST_ORIGIN, TEST_DESTINATION, TEST_DEP_DATE, TEST_RET_DATE, TEST_START_TIME, TEST_END_TIME)
-    ]
-)
 def test_case_2_turkish_airlines_price_sorting(
     driver, origin, destination, dep_date, ret_date, start_time, end_time
 ):
@@ -87,19 +92,12 @@ def test_case_2_turkish_airlines_price_sorting(
     logger.info("Case 2 completed successfully")
 
 
-@pytest.mark.parametrize(
-    "origin, destination, dep_date, ret_date, email, phone, fname, lname, b_day, b_month, b_year, id_number, gender, cc_no, cc_month_idx, cc_year_idx, cc_cvv",
-    [
-        (TEST_ORIGIN, TEST_DESTINATION, TEST_DEP_DATE, TEST_RET_DATE, 
-         "sude.test@gmail.com", "5551234567", "Sude", "Atesoglu", "04", "04", "2000", "58880076462", "Female",
-         "4242424242424242", "0", "1", "123")
-    ]
-)
-def test_case_3_critical_path(
-    driver, origin, destination, dep_date, ret_date, email, phone, fname, lname, b_day, b_month, b_year, id_number, gender, cc_no, cc_month_idx, cc_year_idx, cc_cvv
-):
+def test_case_3_critical_path(driver, origin, destination, dep_date, ret_date):
     logger.info("--- Starting Case 3: Critical Path (End-to-End Checkout Flow) ---")
     
+    passenger = MockPassenger()
+    card = MockCreditCard()
+
     home_page = HomePage(driver)
     results_page = FlightResultPage(driver)
     passenger_page = PassengerInfoPage(driver)
@@ -126,9 +124,11 @@ def test_case_3_critical_path(
     else:
         logger.info("Single-trip detected. Proceeding directly to passenger info.")
 
-    passenger_page.fill_contact_info(email, phone)
-    passenger_page.fill_passenger_details(fname, lname, b_day, b_month, b_year, id_number, gender)
-    
+    passenger_page.fill_contact_info(passenger.email, passenger.phone)
+    passenger_page.fill_passenger_details(
+        passenger.fname, passenger.lname, passenger.b_day, 
+        passenger.b_month, passenger.b_year, passenger.id_number, passenger.gender
+    )
     passenger_page.proceed_to_payment()
     
     payment_indicator_present = WebDriverWait(driver, 10).until(
@@ -138,7 +138,7 @@ def test_case_3_critical_path(
     logger.info("Assertion Passed: Successfully reached the secure payment page.")
 
     payment_page.handle_membership_popup()
-    payment_page.fill_credit_card(cc_no, cc_month_idx, cc_year_idx, cc_cvv)
+    payment_page.fill_credit_card(card.cc_no, card.cc_month_idx, card.cc_year_idx, card.cc_cvv)
     payment_page.submit_payment()
 
     logger.info("Assertion Passed: Critical path completed up to payment submission.")

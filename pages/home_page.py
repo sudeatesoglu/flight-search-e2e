@@ -2,6 +2,10 @@ from loguru import logger
 from pages.base_page import BasePage, ElementTimeoutException
 from pages.locators import HomePageLocators
 
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
+
 
 class HomePage(BasePage):
     """Page Object for the Enuygun Home Page."""
@@ -53,8 +57,7 @@ class HomePage(BasePage):
         self.click_element(HomePageLocators.DEPARTURE_DATE)
         
         logger.info(f"Selecting Departure Date: {date_string}")
-        date_locator = HomePageLocators.get_date_locator(date_string)
-        self.click_element(date_locator)
+        self._select_date_from_calendar(date_string)
 
 
     def select_return_date(self, date_string: str) -> None:
@@ -69,8 +72,7 @@ class HomePage(BasePage):
         self.click_element(HomePageLocators.RETURN_DATE)
         
         logger.info(f"Selecting Return Date: {date_string}")
-        date_locator = HomePageLocators.get_date_locator(date_string)
-        self.click_element(date_locator)
+        self._select_date_from_calendar(date_string)
 
 
     def uncheck_hotel_offer(self) -> None:
@@ -108,6 +110,28 @@ class HomePage(BasePage):
         except ElementTimeoutException:
             logger.warning("Could not find the round-trip radio button.")
             return False
+        
+
+    def _select_date_from_calendar(self, date_string: str) -> None:
+        """
+        Smart loop to find a date in the calendar. If the date is not in the DOM,
+        clicks the 'Next Month' button until it appears.
+        """
+        logger.info(f"Searching for Date: {date_string} in the calendar...")
+        date_locator = HomePageLocators.get_date_locator(date_string)
+        max_clicks = 12
+        
+        for _ in range(max_clicks):
+            try:
+                element = WebDriverWait(self.driver, 1).until(EC.visibility_of_element_located(date_locator))
+                self.driver.execute_script("arguments[0].click();", element)
+                logger.info(f"Date {date_string} selected successfully.")
+                return
+            except TimeoutException:
+                logger.debug(f"Date {date_string} not visible. Clicking next month...")
+                self.click_element_with_js(HomePageLocators.CALENDAR_NEXT_BUTTON)
+
+        raise ElementTimeoutException(f"Could not find date {date_string} after scrolling {max_clicks} months.")
         
 
     def search_flights(self, origin: str, destination: str, dep_date: str, ret_date: str) -> None:
