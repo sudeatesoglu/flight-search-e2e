@@ -1,46 +1,23 @@
 import pytest
 import allure
-from datetime import datetime
 from loguru import logger
-from dataclasses import dataclass
+
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from pages.home_page import HomePage
 from pages.flight_result_page import FlightResultPage
 from pages.passenger_info_page import PassengerInfoPage
 from pages.payment_page import PaymentPage
+from pages.locators import PaymentPageLocators
 from core.config import Config
-
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-
-# Constants
-TIME_FORMAT = "%H:%M"
-SCREENSHOT_DIR = "screenshots"
-TURKISH_AIRLINES_NAMES = ("Türk Hava Yolları", "THY")
-
-# Mock Data Classes for Passenger and Credit Card Information
-@dataclass
-class MockPassenger:
-    """Mock verileri tutan modern ve temiz bir veri sınıfı."""
-    email: str = "sude.test@gmail.com"
-    phone: str = "5551234567"
-    fname: str = "Sude"
-    lname: str = "Atesoglu"
-    id_number: str = "58880076462"
-    b_day: str = "04"
-    b_month: str = "04"
-    b_year: str = "2000"
-    gender: str = "Female"
-    
-@dataclass
-class MockCreditCard:
-    """Kredi kartı verilerini tutan sınıf."""
-    cc_no: str = "4242424242424242"
-    cc_month_idx: str = "0"
-    cc_year_idx: str = "1"
-    cc_cvv: str = "123"
-
+from utils.mock_data import MockPassenger, MockCreditCard
+from utils.validators import (
+    validate_departure_times,
+    validate_turkish_airlines_only,
+    validate_prices_ascending,
+    save_success_screenshot
+)
 
 @allure.epic("Flight Search System")
 @allure.feature("Flight Search & Filter")
@@ -68,9 +45,9 @@ def test_case_1_basic_flight_search_and_time_filter(
     with allure.step("Validate Departure Times"):
         departure_times = results_page.get_departure_times()
         assert departure_times, "No flights found after applying time filter."
-        _validate_departure_times(departure_times, start_time, end_time)
+        validate_departure_times(departure_times, start_time, end_time)
     
-    _save_success_screenshot(driver, "Case1", start_time, end_time)
+    save_success_screenshot(driver, "Case1", start_time, end_time)
     logger.info("Case 1 completed successfully")
 
 
@@ -108,10 +85,10 @@ def test_case_2_turkish_airlines_price_sorting(
         assert airlines, "No airlines detected after filtering."
         assert prices, "No prices detected after filtering."
         
-        _validate_turkish_airlines_only(airlines)
-        _validate_prices_ascending(prices)
+        validate_turkish_airlines_only(airlines)
+        validate_prices_ascending(prices)
     
-    _save_success_screenshot(driver, "Case2_THY", start_time, end_time)
+    save_success_screenshot(driver, "Case2_THY", start_time, end_time)
     logger.info("Case 2 completed successfully")
 
 
@@ -169,7 +146,7 @@ def test_case_3_critical_path(driver, origin, destination, dep_date, ret_date):
     
     with allure.step("Verify Payment Page and Fill CC Form"):
         payment_indicator_present = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "[data-testid='cardNumber']"))
+            EC.presence_of_element_located(PaymentPageLocators.CARD_NUMBER)
         )
         assert payment_indicator_present, "Failed to reach the payment screen! Card input not found."
         logger.info("Assertion Passed: Successfully reached the secure payment page.")
@@ -180,62 +157,6 @@ def test_case_3_critical_path(driver, origin, destination, dep_date, ret_date):
 
     logger.info("Assertion Passed: Critical path completed up to payment submission.")
 
-    _save_success_screenshot(driver, "Case3_CriticalPath", "E2E", "Done")
+    save_success_screenshot(driver, "Case3_CriticalPath", "E2E", "Done")
     logger.info("--- Case 3 Completed Successfully ---")
     
-
-def _validate_departure_times(departure_times: list, start_time: str, end_time: str) -> None:
-    """Validate all departure times fall within the specified range and handle generic data quality."""
-    assert isinstance(departure_times, list) and len(departure_times) > 0, "Departure times list cannot be empty."
-
-    start_bound = datetime.strptime(start_time, TIME_FORMAT).time()
-    end_bound = datetime.strptime(end_time, TIME_FORMAT).time()
-    
-    for time_str in departure_times:
-        assert isinstance(time_str, str) and time_str.strip() != "", "A departure time value exists but is empty or not string."
-        
-        try:
-            flight_time = datetime.strptime(time_str, TIME_FORMAT).time()
-        except ValueError:
-            pytest.fail(f"Could not parse departure time '{time_str}' with expected format {TIME_FORMAT}.")
-            
-        assert start_bound <= flight_time <= end_bound, (
-            f"Flight departure time {time_str} is outside allowed range {start_time}-{end_time}"
-        )
-    
-    logger.info(f"Validated {len(departure_times)} flights within {start_time}-{end_time}")
-
-
-def _validate_turkish_airlines_only(airlines: list) -> None:
-    """Validate all airlines are strictly Turkish Airlines variants."""
-    assert isinstance(airlines, list) and len(airlines) > 0, "No airlines to validate, list is empty."
-
-    for airline in airlines:
-        assert isinstance(airline, str) and airline.strip() != "", "An airline name is unexpectedly empty."
-        
-        assert any(name in airline for name in TURKISH_AIRLINES_NAMES), (
-            f"Expected Turkish Airlines, but found: '{airline}'"
-        )
-    logger.info("All flights are strictly Turkish Airlines")
-
-
-def _validate_prices_ascending(prices: list) -> None:
-    """Validate prices are valid numeric objects and perfectly sorted in ascending order."""
-    assert isinstance(prices, list) and len(prices) > 0, "Can't validate prices sorting on an empty price list."
-    
-    for price in prices:
-        assert isinstance(price, (int, float)), f"Expected price to be numeric, got {type(price)} with value {price}."
-        assert price >= 0, f"Flight price must be realistically zero or positive. Evaluated: {price}."
-        
-    assert prices == sorted(prices), (
-        f"Prices not strictly in ascending order.\nActual: {prices}\nExpected: {sorted(prices)}"
-    )
-    logger.info("Prices are numeric and correctly sorted in ascending order")
-
-
-def _save_success_screenshot(driver, case_name: str, start_time: str, end_time: str) -> None:
-    """Save screenshot with standardized naming."""
-    time_suffix = start_time.replace(":", "") + "_" + end_time.replace(":", "")
-    screenshot_name = f"{SCREENSHOT_DIR}/SUCCESS_{case_name}_{time_suffix}.png"
-    driver.save_screenshot(screenshot_name)
-    logger.info(f"Screenshot saved: {screenshot_name}")

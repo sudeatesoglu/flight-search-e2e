@@ -59,7 +59,7 @@ The default fallback values are configured in `conftest.py` as:
 - Origin: `Istanbul`
 - Destination: `Ankara`
 
-To run the cases with other speciic values, you **must provide the explicit CLI arguments**. Tests are configured to run locally across both Chrome and Firefox based on `.env`.
+To run the cases with other specific values, you **must provide the explicit CLI arguments**. Tests are configured to run locally across both Chrome and Firefox based on `.env`.
 
 **Run the full suite with explicit parameters:**
 ```bash
@@ -150,9 +150,10 @@ allure serve allure-results
 
 ```text
 flight-search-e2e/
+├── allure-results/        # Generated Allure test reports and attachments
 ├── core/
 │   └── config.py          # Environment & configuration loader
-├── data/                  # Test data files (.json, .csv, etc.)
+├── data/                  # Test data files (.csv, generated charts, etc.)
 ├── pages/                 # Page Object Model (POM) classes
 │   ├── base_page.py       # Core wrapper for WebDriver actions
 │   ├── home_page.py       # Home page interactions
@@ -164,7 +165,14 @@ flight-search-e2e/
 ├── tests/                 # Pytest test cases
 │   ├── test_data_analysis.py
 │   └── test_flight_search.py
+├── utils/                 # Helper modules to maintain Single Responsibility Principle
+│   ├── data_analyzer.py   # Pandas & Seaborn logic for flight data analysis
+│   ├── mock_data.py       # Data classes for dummy test user info and payment details
+│   └── validators.py      # Custom assertions and test validation helpers
+├── .env.example           # Template for environment variables
 ├── conftest.py            # Pytest fixtures, hook configs, & WebDriver setup
 ├── pyproject.toml         # Project dependencies and configurations
+├── uv.lock                # Deterministic dependency lock file
+├── test_execution.log     # Real-time pytest execution logs from Loguru
 └── README.md              # Project documentation
 ```
