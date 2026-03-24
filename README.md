@@ -46,10 +46,10 @@ This project was built to satisfy the following core requirements:
    cp .env.example .env
    ```
    Open `.env` and configure your settings.
-   To switch browsers, simply change `BROWSER` in the `.env` file:
+   To switch browsers or disable headless mode, simply change the variables in the `.env` file:
    ```env
-   BROWSER=chrome   # or BROWSER=firefox
-   HEADLESS=true
+   BROWSER=chrome   # Options: chrome, firefox
+   HEADLESS=true    # Set to false to see the browser UI
    ```
 
 ## Running the Tests (CLI Usage)
@@ -66,7 +66,10 @@ To run the cases exactly as requested in the Case Study (e.g., Istanbul to Ankar
 ```bash
 uv run pytest tests/ --origin Istanbul --destination Ankara --dep-date 2026-05-10 --ret-date 2026-05-15 --start-time 10:00 --end-time 18:00
 ```
-
+*Tip: If you want to watch the browser UI during a test regardless of your `.env` setting, add the `--headed` flag:*
+```bash
+uv run pytest tests/test_flight_search.py -k "test_case_1" --headed
+```
 ## Running the Tests Individually
 
 You can run each case individually using the pytest `-k` flag to specify the exact function name. Because `conftest.py` defaults to Istanbul - Ankara, you do not need to pass route arguments for the first three cases.

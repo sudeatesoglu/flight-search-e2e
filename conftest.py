@@ -25,6 +25,7 @@ def pytest_addoption(parser):
     parser.addoption("--ret-date", action="store", default="2026-04-20", help="Return date (YYYY-MM-DD)")
     parser.addoption("--start-time", action="store", default="10:00", help="Filter start time (e.g., 10:00)")
     parser.addoption("--end-time", action="store", default="18:00", help="Filter end time (e.g., 18:00)")
+    parser.addoption("--headed", action="store_true", default=False, help="Run tests with browser UI (disable headless mode)")
 
 @pytest.fixture
 def origin(request):
@@ -90,19 +91,26 @@ def pytest_runtest_makereport(item, call):
 @pytest.fixture(scope="function")
 def driver(request):
     browser_name = Config.BROWSER.lower()
-    logger.info(f"Starting {browser_name} browser for test: {request.node.name}")
+    
+    # CLI flag overrides .env HEADLESS configuration
+    is_headed_cli = request.config.getoption("--headed")
+    run_headless = False if is_headed_cli else Config.HEADLESS
+    
+    logger.info(f"Starting {browser_name} browser (Headless: {run_headless}) for test: {request.node.name}")
     
     if browser_name == "firefox":
         firefox_options = FirefoxOptions()
-        firefox_options.add_argument("--headless")
+        if run_headless:
+            firefox_options.add_argument("--headless")
         
         service = FirefoxService(GeckoDriverManager().install())
         driver = webdriver.Firefox(service=service, options=firefox_options)
         driver.set_window_size(1920, 1080)
     else:
-        # Setup Chrome options for headless mode
+        # Setup Chrome options
         chrome_options = ChromeOptions()
-        chrome_options.add_argument("--headless")
+        if run_headless:
+            chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--window-size=1920,1080")
         

@@ -19,6 +19,7 @@ class Config:
     
     BASE_URL: str = os.getenv("BASE_URL", "https://www.enuygun.com")
     BROWSER: str = os.getenv("BROWSER", "chrome")
+    HEADLESS: bool = os.getenv("HEADLESS", "true").lower() in ("true", "1", "yes")
     
     # Ensure timeout is an integer
     try:
