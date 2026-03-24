@@ -136,6 +136,14 @@ class FlightResultPage(BasePage):
         
         self.wait_for_flight_list_update()
 
+    
+    def click_sort_by_price_ascending(self) -> None:
+        """Click the 'En ucuz' (Price Ascending) sort button."""
+        logger.info("Clicking the 'En ucuz' (Price Ascending) sort button.")
+        
+        self.click_element_with_js(FlightResultPageLocators.PRICE_SORT_BUTTON)
+        self.wait_for_flight_list_update()
+
 
     def get_displayed_airlines(self) -> list[str]:
         """Extract and return the names of all airlines currently visible on the page."""

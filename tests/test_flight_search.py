@@ -78,7 +78,7 @@ def test_case_1_basic_flight_search_and_time_filter(
 @allure.feature("Airline Specific Search")
 @allure.story("Turkish Airlines Price Sorting")
 @allure.title("Test Case 2: Turkish Airlines Price Sorting ({origin} -> {destination})")
-@allure.description("Search for flights, filter by Turkish Airlines, and validate that prices are displayed in completely ascending order.")
+@allure.description("Search for flights, filter by Turkish Airlines, strictly sort by cheapest price, and validate ascending order.")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.label("layer", "e2e")
 def test_case_2_turkish_airlines_price_sorting(
@@ -97,6 +97,9 @@ def test_case_2_turkish_airlines_price_sorting(
     with allure.step("Apply Time and Airline Filters"):
         results_page.apply_departure_time_filter(start_time, end_time)
         results_page.apply_airline_filter()
+
+    with allure.step("Sort results explicitly by cheapest price"):
+        results_page.click_sort_by_price_ascending()
         
     with allure.step("Extract Metrics and Assert Validation"):
         airlines = results_page.get_displayed_airlines()

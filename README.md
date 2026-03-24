@@ -58,7 +58,7 @@ The framework is strictly built around dynamic data injection to fulfill the req
 
 The default fallback values are configured in `conftest.py` as:
 - Origin: `Istanbul`
-- Destination: `Lefkosa`
+- Destination: `Ankara`
 
 To run the cases exactly as requested in the Case Study (e.g., Istanbul to Ankara for Cases 1 & 2), you **must provide the explicit CLI arguments**. Tests are configured to run locally across both Chrome and Firefox based on `.env`.
 
@@ -69,28 +69,28 @@ uv run pytest tests/ --origin Istanbul --destination Ankara --dep-date 2026-05-1
 
 ## Running the Tests Individually
 
-You can run each case individually using the pytest `-k` flag to specify the exact function name. We pass the explicit `--origin` and `--destination` parameters required for each scenario as per the test document.
+You can run each case individually using the pytest `-k` flag to specify the exact function name. Because `conftest.py` defaults to Istanbul - Ankara, you do not need to pass route arguments for the first three cases.
 
 **Case 1: Basic Flight Search and Time Filter**
 Validates that flights from Istanbul to Ankara are correctly filtered between 10:00 AM and 6:00 PM.
 ```bash
-uv run pytest tests/test_flight_search.py -k "test_case_1_basic_flight_search_and_time_filter" --origin Istanbul --destination Ankara --start-time 10:00 --end-time 18:00
+uv run pytest tests/test_flight_search.py -k "test_case_1_basic_flight_search_and_time_filter"
 ```
 
 **Case 2: Price Sorting for Turkish Airlines**
 Validates that Turkish Airlines flights (Istanbul -> Ankara) are correctly filtered and prices are sorted in strict ascending order.
 ```bash
-uv run pytest tests/test_flight_search.py -k "test_case_2_turkish_airlines_price_sorting" --origin Istanbul --destination Ankara
+uv run pytest tests/test_flight_search.py -k "test_case_2_turkish_airlines_price_sorting"
 ```
 
 **Case 3: Critical User Path (End-to-End Checkout)**
-Executes the full booking journey from search to the credit card payment step.
+Executes the full booking journey from search to the credit card payment step (Istanbul -> Ankara).
 ```bash
 uv run pytest tests/test_flight_search.py -k "test_case_3_critical_path"
 ```
 
 **Case 4: Data Scraping, Analysis, and Categorization**
-Scrapes flight results (Istanbul -> Nicosia route as requested) into a CSV, computes cost-effectiveness, and generates visualization charts (Heatmap & Bar charts).
+Scrapes flight results (Istanbul -> Nicosia route as requested by the case) into a CSV, computes cost-effectiveness, and generates visualization charts (Heatmap & Bar charts). You must pass the destination explicitly to override the default.
 ```bash
 uv run pytest tests/test_data_analysis.py --origin Istanbul --destination Lefkosa
 ```

@@ -20,7 +20,7 @@ logger.add('test_execution.log', rotation='10 MB', level='INFO')
 def pytest_addoption(parser):
     """Adds custom command-line options for test configuration."""
     parser.addoption("--origin", action="store", default="Istanbul", help="Origin city (e.g., Istanbul)")
-    parser.addoption("--destination", action="store", default="Lefkosa", help="Destination city (e.g., Lefkosa)")
+    parser.addoption("--destination", action="store", default="Ankara", help="Destination city (e.g., Ankara)")
     parser.addoption("--dep-date", action="store", default="2026-04-15", help="Departure date (YYYY-MM-DD)")
     parser.addoption("--ret-date", action="store", default="2026-04-20", help="Return date (YYYY-MM-DD)")
     parser.addoption("--start-time", action="store", default="10:00", help="Filter start time (e.g., 10:00)")

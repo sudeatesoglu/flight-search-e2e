@@ -39,6 +39,7 @@ class FlightResultPageLocators:
     DEPARTURE_TIMES = (By.CSS_SELECTOR, "[data-testid='departureTime']")
     AIRLINE_ACCORDION = (By.CSS_SELECTOR, "div.ctx-filter-airline")
     THY_CHECKBOX = (By.CSS_SELECTOR, "input#TKairlines")
+    PRICE_SORT_BUTTON = (By.CSS_SELECTOR, "[data-testid='sortButtons0']")
 
     # Flight Cards
     FLIGHT_CARDS = (By.CSS_SELECTOR, ".flight-item__wrapper")
