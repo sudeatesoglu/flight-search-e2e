@@ -20,7 +20,7 @@ This project was built to satisfy the following core requirements:
 - **Browser Automation:** Selenium WebDriver 4.41.0+
 - **Design Pattern:** Page Object Model (POM) & Object-Oriented Programming (OOP)
 - **Data Analysis & Vis:** Pandas, Matplotlib, Seaborn
-- **Reporting:** Allure Reports (with Epic/Feature/Story decorators and automatic screenshot formatting)
+- **Reporting:** Allure Reports (with automatic sucessful execution and failure screenshots)
 - **Logging:** Loguru (real-time console and file logging)
 - **Environment Management:** Python-dotenv
 - **Cross-Browser Testing:** Configurable for **Chrome** and **Firefox**
@@ -36,9 +36,8 @@ This project was built to satisfy the following core requirements:
 2. **Set up the virtual environment:**
    Using `uv` (Fastest):
    ```bash
-   uv venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   uv pip install -e .
+   uv sync
+   # No need to manually activate virtual env if you run with 'uv run pytest'
    ```
 
 3. **Environment Setup:**
@@ -60,9 +59,9 @@ The default fallback values are configured in `conftest.py` as:
 - Origin: `Istanbul`
 - Destination: `Ankara`
 
-To run the cases exactly as requested in the Case Study (e.g., Istanbul to Ankara for Cases 1 & 2), you **must provide the explicit CLI arguments**. Tests are configured to run locally across both Chrome and Firefox based on `.env`.
+To run the cases with other speciic values, you **must provide the explicit CLI arguments**. Tests are configured to run locally across both Chrome and Firefox based on `.env`.
 
-**Run the full suite with explicit Case Study parameters:**
+**Run the full suite with explicit parameters:**
 ```bash
 uv run pytest tests/ --origin Istanbul --destination Ankara --dep-date 2026-05-10 --ret-date 2026-05-15 --start-time 10:00 --end-time 18:00
 ```
@@ -100,8 +99,8 @@ uv run pytest tests/test_data_analysis.py --origin Istanbul --destination Lefkos
 
 ## Outputs & Reports
 
-### 1. Allure Reports (Screenshots on Failure)
-The framework uses Allure for comprehensive test reporting, including `@allure.step` definitions, `@allure.epic` categorization, and **automatic screenshot captures on test failures**. Data Analysis charts (PNG) and Pandas datasets (CSV) are also automatically attached to the Allure report!
+### 1. Allure Reports (Screenshots Support)
+The framework uses Allure for comprehensive test reporting, including `@allure.step` definitions, `@allure.epic` categorization, and **automatic screenshot captures (on both success and failure)**. Data Analysis charts (PNG) and Pandas datasets (CSV) are also automatically attached to the Allure report!
 
 To generate and view the report:
 ```bash
@@ -161,7 +160,7 @@ flight-search-e2e/
 │   ├── passenger_info_page.py
 │   ├── payment_page.py
 │   └── locators.py        # Centralized UI locators
-├── screenshots/           # Auto-generated failure screenshots
+├── screenshots/           # Auto-generated success & failure screenshots
 ├── tests/                 # Pytest test cases
 │   ├── test_data_analysis.py
 │   └── test_flight_search.py

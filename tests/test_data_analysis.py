@@ -135,7 +135,28 @@ def test_case_4_analysis_and_categorization(driver, origin, destination, dep_dat
         
     with allure.step("Extract All Visible Flight Data"):
         flight_data = results_page.extract_all_flight_data()
-        assert len(flight_data) > 0, "No flight data could be scraped!"
+        assert len(flight_data) > 0, "No flight data could be scraped from the page!"
+        
+        # Enhanced Data Quality Assertions
+        for index, flight in enumerate(flight_data):
+            # Assert Airline Name is valid
+            assert flight.get("Airline"), f"Row {index}: Airline name is empty or missing."
+            assert isinstance(flight["Airline"], str), f"Row {index}: Airline name should be a string."
+
+            # Assert Price is present and represents a numeric concept
+            assert flight.get("Price") is not None, f"Row {index}: Price is missing."
+            try:
+                price_val = float(flight["Price"])
+                assert price_val > 0, f"Row {index}: Price must be greater than zero, got {price_val}."
+            except ValueError:
+                pytest.fail(f"Row {index}: Price '{flight['Price']}' could not be converted to a numeric value.")
+                
+            # Assert Time strings are not totally empty
+            assert flight.get("Departure Time"), f"Row {index}: Departure time is empty."
+            assert flight.get("Arrival Time"), f"Row {index}: Arrival time is empty."
+            
+            # Assert Duration is filled
+            assert flight.get("Duration"), f"Row {index}: Flight duration is empty."
         
     with allure.step(f"Save Raw Data to {csv_file_path}"):
         if not os.path.exists(DATA_DIR):
