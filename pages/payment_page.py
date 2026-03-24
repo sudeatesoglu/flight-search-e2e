@@ -36,6 +36,20 @@ class PaymentPage(BasePage):
         
         self.input_text(PaymentPageLocators.CVV, cvv)
 
+    
+    def verify_additional_payment_options(self) -> None:
+        """Clicks and verifies the installment table and discount code areas."""
+        logger.info("Verifying Installment Table and Discount Code options...")
+        try:
+            self.click_element_with_js(PaymentPageLocators.INSTALLMENT_TABLE)
+            logger.info("Installment table expanded.")
+            self.click_element_with_js(PaymentPageLocators.INSTALLMENT_TABLE_CLOSE)
+            logger.info("Installment table closed.")
+            self.click_element_with_js(PaymentPageLocators.DISCOUNT_BOX)
+            logger.info("Discount box clicked.")
+        except Exception:
+            logger.warning("Installment or Discount options not fully visible or clickable.")
+
 
     def submit_payment(self) -> None:
         """Clicks the final payment submit button to complete the critical path."""

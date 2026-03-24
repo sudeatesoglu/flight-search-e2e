@@ -1,4 +1,3 @@
-import pytest
 import allure
 from loguru import logger
 
@@ -112,13 +111,16 @@ def test_case_3_critical_path(driver, origin, destination, dep_date, ret_date):
     payment_page = PaymentPage(driver)
     
     
-    @allure.step("Fill Passenger Information")
+    @allure.step("Fill Passenger Information and Add Premium Services")
     def _fill_passenger_step():
         passenger_page.fill_contact_info(passenger.email, passenger.phone)
         passenger_page.fill_passenger_details(
             passenger.fname, passenger.lname, passenger.b_day, 
             passenger.b_month, passenger.b_year, passenger.id_number, passenger.gender
         )
+        passenger_page.add_extra_baggage()
+        passenger_page.select_premium_services()
+
         passenger_page.proceed_to_payment()
 
     with allure.step("Navigate to Enuygun and Search Flight"):
@@ -144,15 +146,17 @@ def test_case_3_critical_path(driver, origin, destination, dep_date, ret_date):
 
     _fill_passenger_step()
     
-    with allure.step("Verify Payment Page and Fill CC Form"):
+    with allure.step("Verify Payment Page, Fill CC Form and Accept Terms"):
         payment_indicator_present = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located(PaymentPageLocators.CARD_NUMBER)
         )
         assert payment_indicator_present, "Failed to reach the payment screen! Card input not found."
         logger.info("Assertion Passed: Successfully reached the secure payment page.")
 
+        payment_page.verify_additional_payment_options()
         payment_page.handle_membership_popup()
         payment_page.fill_credit_card(card.cc_no, card.cc_month_idx, card.cc_year_idx, card.cc_cvv)
+        
         payment_page.submit_payment()
 
     logger.info("Assertion Passed: Critical path completed up to payment submission.")

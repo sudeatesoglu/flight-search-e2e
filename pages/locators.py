@@ -40,6 +40,7 @@ class FlightResultPageLocators:
     AIRLINE_ACCORDION = (By.CSS_SELECTOR, "div.ctx-filter-airline")
     THY_CHECKBOX = (By.CSS_SELECTOR, "input#TKairlines")
     PRICE_SORT_BUTTON = (By.CSS_SELECTOR, "[data-testid='sortButtons0']")
+    EXTRA_FLY_PACKAGE = (By.CSS_SELECTOR, "[data-testid*='ProviderPackageItemExtra Fly']")
 
     # Flight Cards
     FLIGHT_CARDS = (By.CSS_SELECTOR, ".flight-item__wrapper")
@@ -79,9 +80,17 @@ class PassengerInfoPageLocators:
     
     GENDER_FEMALE = (By.XPATH, "//label[contains(., 'Kadın') or contains(., 'Female')]")
     GENDER_MALE = (By.XPATH, "//label[contains(., 'Erkek') or contains(., 'Male')]")
-    
-    CONTINUE_BTN = (By.CSS_SELECTOR, "#continue-button")
 
+    # Extras and Navigation
+    BAGGAGE_TOGGLE_BTN = (By.CSS_SELECTOR, "#baggageToggleBtn")
+    ADD_BAGGAGE_BTN = (By.CSS_SELECTOR, "[data-testid='addBaggageBtn-departure-1']")
+    BAGGAGE_MODAL_CONFIRM = (By.CSS_SELECTOR, "#baggageModalConfirm")
+    
+    ASSURANCE_RADIO = (By.CSS_SELECTOR, "[data-testid='assurance-0-label']")
+    HEALTH_GUARANTEE_RADIO = (By.CSS_SELECTOR, "[data-testid='travel_health_guarantee-0-label']")
+    ONLINE_CHECKIN_RADIO = (By.CSS_SELECTOR, "[data-testid='online_checkin-0-label']")
+
+    CONTINUE_BTN = (By.CSS_SELECTOR, "#continue-button")
     PAYMENT_PAGE_INDICATOR = (By.CSS_SELECTOR, "[data-testid='cardNumber']")
 
 
@@ -92,7 +101,14 @@ class PaymentPageLocators:
     CARD_MONTH_INPUT = (By.CSS_SELECTOR, "[data-testid='cardMonth-input']")
     CARD_YEAR_INPUT = (By.CSS_SELECTOR, "[data-testid='cardYear-input']")
     CVV = (By.CSS_SELECTOR, "[data-testid='CVV']")
-    
+
+    INSTALLMENT_TABLE = (By.CSS_SELECTOR, "[data-testid='installment-table-show-title']")
+    INSTALLMENT_TABLE_CLOSE = (By.CSS_SELECTOR, "[data-testid='installment-table-close']")
+    DISCOUNT_BOX = (By.CSS_SELECTOR, "[data-testid='payment-form-discount-box']")
+
+    SUBMIT_BUTTON = (By.CSS_SELECTOR, "[data-testid='payment-form-submit-button']")
+    MEMBERSHIP_DIALOG_CLOSE = (By.CSS_SELECTOR, "[data-testid='membership-signin-dialog-close-button']")
+
     @staticmethod
     def get_month_option(index: str) -> tuple[str, str]:
         return (By.CSS_SELECTOR, f"[data-testid='cardMonth-option-{index}']")
@@ -100,6 +116,4 @@ class PaymentPageLocators:
     @staticmethod
     def get_year_option(index: str) -> tuple[str, str]:
         return (By.CSS_SELECTOR, f"[data-testid='cardYear-option-{index}']")
-
-    SUBMIT_BUTTON = (By.CSS_SELECTOR, "[data-testid='payment-form-submit-button']")
-    MEMBERSHIP_DIALOG_CLOSE = (By.CSS_SELECTOR, "[data-testid='membership-signin-dialog-close-button']")
+    

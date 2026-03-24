@@ -48,3 +48,32 @@ class PassengerInfoPage(BasePage):
         except Exception as e:
             logger.error("Redirection to the payment page timed out!")
             raise e
+
+
+    def add_extra_baggage(self) -> None:
+        """Opens baggage accordion and adds extra baggage."""
+        logger.info("Attempting to add extra baggage...")
+        try:
+            self.click_element_with_js(PassengerInfoPageLocators.BAGGAGE_TOGGLE_BTN)
+            self.click_element_with_js(PassengerInfoPageLocators.ADD_BAGGAGE_BTN)
+            self.click_element_with_js(PassengerInfoPageLocators.BAGGAGE_MODAL_CONFIRM)
+            logger.info("Extra baggage added and confirmed.")
+        except Exception as e:
+            logger.warning(f"Could not add extra baggage. It might not be available. Error: {e}")
+
+
+    def select_premium_services(self) -> None:
+        """Selects additional premium services like Assurance, Health Guarantee, and Check-in."""
+        logger.info("Selecting premium extra services (Assurance, Health, Express Check-in)...")
+        services = [
+            ("Biletim Güvende", PassengerInfoPageLocators.ASSURANCE_RADIO),
+            ("Seyahat Sağlık", PassengerInfoPageLocators.HEALTH_GUARANTEE_RADIO),
+            ("Express Check-in", PassengerInfoPageLocators.ONLINE_CHECKIN_RADIO)
+        ]
+        
+        for name, locator in services:
+            try:
+                self.click_element_with_js(locator)
+                logger.info(f"Selected extra service: {name}")
+            except Exception:
+                logger.warning(f"Extra service '{name}' could not be selected. Skipping.")
